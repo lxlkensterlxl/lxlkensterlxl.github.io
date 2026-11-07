@@ -71,11 +71,6 @@
             border-radius: 4px;
         }
 
-        .hud-border {
-            border: 1px solid rgba(255, 42, 141, 0.4);
-            box-shadow: inset 0 0 15px rgba(168, 85, 247, 0.15), 0 0 10px rgba(255, 42, 141, 0.2);
-        }
-
         .hud-card {
             background: rgba(18, 11, 36, 0.85);
             backdrop-filter: blur(8px);
@@ -219,7 +214,7 @@
             <div class="px-3 py-1 flex items-center justify-between bg-black/60 border-b border-purple-900/40 z-30 text-[10px] font-mono text-purple-300/80">
                 <div class="flex items-center gap-1">
                     <i class="fa-solid fa-link text-[8px] text-pink-400"></i>
-                    <span id="url-text" class="tracking-wider text-[9px]">lxikensterlxl.github.io</span>
+                    <span id="url-text" class="tracking-wider text-[9px]">lxlkensterlxl.github.io</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button id="toggle-audio-btn" title="Mute/Unmute Audio" class="text-pink-400 hover:text-pink-300">
@@ -274,7 +269,7 @@
                     <div class="absolute bottom-2 left-2 z-20 w-[64%] hud-card p-1.5 rounded-lg border border-purple-500/50 text-[9px] font-mono leading-tight flex items-center gap-2">
                         <div class="relative flex-none">
                             <div class="w-9 h-9 rounded-lg border border-pink-500/80 overflow-hidden shadow-[0_0_8px_rgba(255,42,141,0.5)] bg-slate-900 flex items-center justify-center">
-                                <img id="avatar-img-preview" src="" alt="Suki Avatar Preview" class="w-full h-full object-cover object-top" />
+                                <canvas id="avatar-preview-canvas" class="w-full h-full object-cover"></canvas>
                             </div>
                             <span id="avatar-status-dot" class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-black"></span>
                         </div>
@@ -293,7 +288,7 @@
                     <div class="absolute bottom-2 right-2 z-20 flex flex-col items-end gap-1">
                         <div id="commits-badge" class="hud-card px-2 py-0.5 rounded-full text-[8px] font-orbitron text-purple-200 border border-pink-500/50 flex items-center gap-1 shadow-[0_0_8px_rgba(255,42,141,0.3)]">
                             <i class="fa-solid fa-clock-rotate-left text-pink-400 text-[8px]"></i>
-                            <span>15 Commits</span>
+                            <span>16 Commits</span>
                         </div>
                         <div class="flex gap-1">
                             <button id="btn-expr-happy" class="px-1.5 py-0.5 bg-pink-950/80 hover:bg-pink-800 border border-pink-500/50 rounded text-[7px] text-pink-300 font-mono">Happy</button>
@@ -471,7 +466,6 @@
     <!-- JAVASCRIPT ENGINE & AVATAR CONTROLLER -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // HIGH RESOLUTION AVATAR IMAGE DATA BASE64
             const SUKI_AVATAR_IMAGE_SRC = "image.png";
 
             // STATE ENGINE
@@ -490,15 +484,57 @@
                 isEngineReady: false
             };
 
-            // LOAD AVATAR IMAGE
+            // LOAD AVATAR IMAGE WITH FALLBACK TO PROCEDURAL AVATAR RENDERER
             const avatarImg = new Image();
-            avatarImg.src = SUKI_AVATAR_IMAGE_SRC;
             let avatarLoaded = false;
+            
             avatarImg.onload = () => {
                 avatarLoaded = true;
-                const previewImg = document.getElementById('avatar-img-preview');
-                if (previewImg) previewImg.src = SUKI_AVATAR_IMAGE_SRC;
+                drawPreviewIcon();
             };
+            
+            avatarImg.onerror = () => {
+                console.warn("Avatar image failed to load from relative path. Falling back to dynamic vector engine.");
+                avatarLoaded = false;
+                drawPreviewIcon();
+            };
+            
+            avatarImg.src = SUKI_AVATAR_IMAGE_SRC;
+
+            // DRAW MINI AVATAR PREVIEW IN HUD META CARD
+            function drawPreviewIcon() {
+                const prevCanvas = document.getElementById('avatar-preview-canvas');
+                if (!prevCanvas) return;
+                const pCtx = prevCanvas.getContext('2d');
+                prevCanvas.width = 36;
+                prevCanvas.height = 36;
+                pCtx.clearRect(0, 0, 36, 36);
+
+                if (avatarLoaded) {
+                    pCtx.drawImage(avatarImg, 0, 0, 36, 36);
+                } else {
+                    // Procedural Icon Fallback
+                    pCtx.fillStyle = '#0f0826';
+                    pCtx.fillRect(0, 0, 36, 36);
+                    
+                    // Hair
+                    pCtx.fillStyle = '#bf5af2';
+                    pCtx.beginPath();
+                    pCtx.arc(18, 18, 14, 0, Math.PI * 2);
+                    pCtx.fill();
+                    
+                    // Face
+                    pCtx.fillStyle = '#fce7f3';
+                    pCtx.beginPath();
+                    pCtx.arc(18, 20, 10, 0, Math.PI * 2);
+                    pCtx.fill();
+
+                    // Cyber Eyes
+                    pCtx.fillStyle = '#00f0ff';
+                    pCtx.fillRect(13, 18, 3, 4);
+                    pCtx.fillRect(20, 18, 3, 4);
+                }
+            }
 
             // CLOCK & STATUS BAR UPDATER
             function updateClock() {
@@ -522,40 +558,157 @@
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas();
 
-            let animFrameId;
+            // PROCEDURAL VECTOR ANIME AVATAR DRAW FUNCTION (Fall-back engine when PNG asset unavailable)
+            function drawProceduralKitsuneAvatar(timestamp, width, height, floatY, breathScale) {
+                const centerX = width / 2;
+                const centerY = height / 2 + 10 + floatY;
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.scale(breathScale, breathScale);
+
+                // Kitsune Ears (Back)
+                ctx.fillStyle = '#8b5cf6';
+                ctx.beginPath();
+                ctx.moveTo(-45, -35); ctx.lineTo(-75, -95); ctx.lineTo(-15, -60);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(45, -35); ctx.lineTo(75, -95); ctx.lineTo(15, -60);
+                ctx.fill();
+
+                // Inner Ear Glow
+                ctx.fillStyle = '#ff2a8d';
+                ctx.beginPath();
+                ctx.moveTo(-40, -40); ctx.lineTo(-65, -85); ctx.lineTo(-20, -55);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(40, -40); ctx.lineTo(65, -85); ctx.lineTo(20, -55);
+                ctx.fill();
+
+                // Hair Back
+                ctx.fillStyle = '#bf5af2';
+                ctx.beginPath();
+                ctx.arc(0, 0, 75, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Face Base
+                ctx.fillStyle = '#fce7f3';
+                ctx.beginPath();
+                ctx.ellipse(0, 10, 52, 60, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Cyber Visor / Hair Bangs
+                ctx.fillStyle = '#a855f7';
+                ctx.beginPath();
+                ctx.moveTo(-55, -20);
+                ctx.quadraticCurveTo(0, 15, 55, -20);
+                ctx.quadraticCurveTo(0, -75, -55, -20);
+                ctx.fill();
+
+                // Cyber Eye Base
+                const eyeY = 8;
+                const eyePulse = (Math.sin(timestamp / 250) + 1) / 2;
+
+                if (state.eyeGlow) {
+                    ctx.shadowColor = state.expression === 'tactical' ? '#00f0ff' : '#ff2a8d';
+                    ctx.shadowBlur = 12 + eyePulse * 8;
+                }
+
+                ctx.fillStyle = state.expression === 'tactical' ? '#00f0ff' : '#ff2a8d';
+                
+                // Left & Right Eyes
+                if (state.expression === 'surprised') {
+                    ctx.beginPath();
+                    ctx.arc(-22, eyeY, 11, 0, Math.PI * 2);
+                    ctx.arc(22, eyeY, 11, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.ellipse(-22, eyeY, 8, 12, 0, 0, Math.PI * 2);
+                    ctx.ellipse(22, eyeY, 8, 12, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.shadowBlur = 0;
+
+                // Eye Highlights
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-24, eyeY - 4, 3, 0, Math.PI * 2);
+                ctx.arc(20, eyeY - 4, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Expressions
+                if (state.expression === 'blush') {
+                    ctx.fillStyle = 'rgba(255, 42, 141, 0.5)';
+                    ctx.beginPath();
+                    ctx.ellipse(-28, eyeY + 16, 12, 6, -0.1, 0, Math.PI * 2);
+                    ctx.ellipse(28, eyeY + 16, 12, 6, 0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (state.expression === 'tactical') {
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.arc(22, eyeY, 16, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Mouth & Lip Sync Engine
+                const mouthY = 36;
+                ctx.fillStyle = '#10061e';
+                ctx.strokeStyle = '#ff2a8d';
+                ctx.lineWidth = 2;
+
+                if (state.isSpeaking) {
+                    const mouthOpen = Math.abs(Math.sin(timestamp / 70)) * 10 + 4;
+                    ctx.beginPath();
+                    ctx.ellipse(0, mouthY, 7, mouthOpen / 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Tongue accent
+                    ctx.fillStyle = '#ff2a8d';
+                    ctx.beginPath();
+                    ctx.ellipse(0, mouthY + mouthOpen * 0.2, 4, mouthOpen * 0.2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(0, mouthY - 4, 6, 0.2, Math.PI - 0.2);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
 
             function renderAvatar(timestamp) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 const width = canvas.width;
                 const height = canvas.height;
 
-                // Breathing/Idle Float Offset
+                // Idle Breathing & Float Physics Offset
                 const floatY = Math.sin(timestamp / 400) * 5;
                 const breathScale = 1 + Math.sin(timestamp / 800) * 0.01;
 
                 if (avatarLoaded) {
                     ctx.save();
                     
-                    // Draw centered, scaled character image inside canvas
-                    const aspect = avatarImg.width / avatarImg.height;
-                    let drawHeight = height * 1.35;
+                    const aspect = avatarImg.width / avatarImg.height || 1;
+                    let drawHeight = height * 1.1;
                     let drawWidth = drawHeight * aspect;
                     let drawX = (width - drawWidth) / 2;
-                    let drawY = (height - drawHeight) / 2 + 35 + floatY;
+                    let drawY = (height - drawHeight) / 2 + 15 + floatY;
 
-                    // Apply slight breathing scale from center base
-                    ctx.translate(width / 2, height);
+                    ctx.translate(width / 2, height / 2);
                     ctx.scale(breathScale, breathScale);
-                    ctx.translate(-width / 2, -height);
+                    ctx.translate(-width / 2, -height / 2);
 
-                    // Render Base Character Image
+                    // Render Loaded Character Image
                     ctx.drawImage(avatarImg, drawX, drawY, drawWidth, drawHeight);
 
                     // CYBER GLOW OVERLAYS & REACTIVE CANVAS EFFECTS
                     if (state.eyeGlow) {
                         const eyePulse = (Math.sin(timestamp / 250) + 1) / 2;
                         
-                        // Cyber Ear Pulse Glow Coordinates (Adjusted relative to drawn canvas head)
                         const earLeftX = drawX + drawWidth * 0.40;
                         const earLeftY = drawY + drawHeight * 0.07;
                         const earRightX = drawX + drawWidth * 0.62;
@@ -570,7 +723,6 @@
                         ctx.arc(earRightX, earRightY, 7, 0, Math.PI * 2);
                         ctx.fill();
 
-                        // Glowing Cyber Eyes Overlay
                         const eyeY = drawY + drawHeight * 0.16;
                         const eyeL = drawX + drawWidth * 0.44;
                         const eyeR = drawX + drawWidth * 0.57;
@@ -592,14 +744,12 @@
                     const mouthX = drawX + drawWidth * 0.505;
 
                     if (state.expression === 'blush') {
-                        // Cheek Blush Highlights
                         ctx.fillStyle = 'rgba(255, 42, 141, 0.45)';
                         ctx.beginPath();
                         ctx.ellipse(drawX + drawWidth * 0.42, eyeCenterY + 14, 10, 5, -0.1, 0, Math.PI * 2);
                         ctx.ellipse(drawX + drawWidth * 0.59, eyeCenterY + 14, 10, 5, 0.1, 0, Math.PI * 2);
                         ctx.fill();
                     } else if (state.expression === 'surprised') {
-                        // Wide Cyber Ring Highlights around eyes
                         ctx.strokeStyle = '#00f0ff';
                         ctx.lineWidth = 1.5;
                         ctx.beginPath();
@@ -607,7 +757,6 @@
                         ctx.arc(drawX + drawWidth * 0.57, eyeCenterY, 8, 0, Math.PI * 2);
                         ctx.stroke();
                     } else if (state.expression === 'tactical') {
-                        // HUD Targeting reticle overlay on face
                         ctx.strokeStyle = '#00f0ff';
                         ctx.lineWidth = 1;
                         ctx.beginPath();
@@ -629,7 +778,6 @@
                         ctx.fill();
                         ctx.stroke();
 
-                        // Inner tongue accent
                         ctx.fillStyle = '#ff2a8d';
                         ctx.beginPath();
                         ctx.ellipse(mouthX, mouthY + mouthOpen * 0.2, 3, mouthOpen * 0.25, 0, 0, Math.PI * 2);
@@ -638,16 +786,13 @@
 
                     ctx.restore();
                 } else {
-                    // Fallback visual loader until image mounts
-                    ctx.fillStyle = '#ff2a8d';
-                    ctx.font = '12px Share Tech Mono';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('LOADING TACTICAL AVATAR...', width / 2, height / 2);
+                    // Fallback to full procedural vector rendering when image PNG is unavailable
+                    drawProceduralKitsuneAvatar(timestamp, width, height, floatY, breathScale);
                 }
 
-                animFrameId = requestAnimationFrame(renderAvatar);
+                requestAnimationFrame(renderAvatar);
             }
-            animFrameId = requestAnimationFrame(renderAvatar);
+            requestAnimationFrame(renderAvatar);
 
             canvas.addEventListener('click', () => {
                 const exprs = ['happy', 'surprised', 'blush', 'tactical'];
@@ -683,7 +828,6 @@
                 if (!synth || state.audioMuted) return;
                 synth.cancel();
 
-                // Clean emojis and hud formatting symbols before speaking
                 const cleanText = text.replace(/[*_~`]/g, '').replace(/\[.*?\]/g, '');
 
                 const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -786,7 +930,6 @@
                 chatInput.value = '';
 
                 if (state.webllmEngine && state.isEngineReady) {
-                    // WEBLLM REAL-TIME STREAMING RESPONSE
                     const sukiMsgElem = appendMessage('Tactical Kitsune (Suki)', 'Thinking...', false);
                     const pElem = sukiMsgElem.querySelector('.msg-content');
                     pElem.textContent = '';
@@ -819,7 +962,6 @@
                         speakText(fallbackText);
                     }
                 } else {
-                    // DYNAMIC FALLBACK RESPONSE
                     setTimeout(() => {
                         const reply = getFallbackResponse(text);
                         appendMessage('Tactical Kitsune (Suki)', reply, false);
