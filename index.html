@@ -147,6 +147,11 @@
         .speaking-active .equalizer-bar {
             animation: bounce 0.4s ease-in-out infinite alternate;
         }
+        .speaking-active .equalizer-bar:nth-child(2) { animation-delay: 0.1s; }
+        .speaking-active .equalizer-bar:nth-child(3) { animation-delay: 0.2s; }
+        .speaking-active .equalizer-bar:nth-child(4) { animation-delay: 0.3s; }
+        .speaking-active .equalizer-bar:nth-child(5) { animation-delay: 0.15s; }
+
         @keyframes bounce {
             0% { height: 15%; }
             100% { height: 100%; }
@@ -171,4 +176,149 @@
             
             <!-- Scanlines & Grid Overlay -->
             <div class="absolute inset-0 scanlines pointer-events-none z-40 opacity-20"></div>
-            <div class="absolute inset-0 matrix-bg pointer-events-none z-1
+            <div class="absolute inset-0 matrix-bg pointer-events-none z-10"></div>
+
+            <!-- Header HUD -->
+            <header class="relative z-30 pt-7 px-4 pb-2 border-b border-purple-500/30 bg-cyberDark/90 flex justify-between items-center">
+                <div>
+                    <h1 class="font-orbitron font-extrabold text-sm tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-400">
+                        SUKIBOT // v2.0
+                    </h1>
+                    <p class="font-mono text-[10px] text-cyan-400/80">STATUS: <span id="status-text" class="text-pink-400">OFFLINE</span></p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div id="equalizer" class="flex items-end space-x-1 h-4 w-8">
+                        <div class="equalizer-bar w-1 bg-cyan-400 rounded-full"></div>
+                        <div class="equalizer-bar w-1 bg-pink-500 rounded-full"></div>
+                        <div class="equalizer-bar w-1 bg-purple-500 rounded-full"></div>
+                        <div class="equalizer-bar w-1 bg-cyan-400 rounded-full"></div>
+                        <div class="equalizer-bar w-1 bg-pink-500 rounded-full"></div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Chat Output Container -->
+            <main id="chat-box" class="relative z-30 flex-1 overflow-y-auto p-4 space-y-3 font-rajdhani text-sm no-scrollbar">
+                <div class="hud-card p-3 rounded-lg cyber-corner">
+                    <p class="font-orbitron text-xs text-cyan-400 mb-1">&gt; SYSTEM INIT</p>
+                    <p class="text-slate-300">Welcome, Operator. WebLLM module ready. Tap microphone or type a command below to initialize connection.</p>
+                </div>
+            </main>
+
+            <!-- Control & Input Dock -->
+            <footer class="relative z-30 p-3 bg-cyberPanel/90 border-t border-purple-500/30 space-y-2">
+                <form id="chat-form" class="flex items-center space-x-2">
+                    <button type="button" id="mic-btn" class="w-10 h-10 rounded-lg bg-cyberCard border border-pink-500/40 text-pink-400 flex items-center justify-center hover:bg-pink-500/20 transition-all">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <input type="text" id="user-input" placeholder="Type prompt..." class="flex-1 bg-cyberCard border border-purple-500/40 rounded-lg px-3 py-2 text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-400">
+                    <button type="submit" class="w-10 h-10 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Interaction & Engine Scripts -->
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const micBtn = document.getElementById('mic-btn');
+        const statusText = document.getElementById('status-text');
+        const equalizer = document.getElementById('equalizer');
+
+        // Web Speech API Integration
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isListening = false;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.classList.add('mic-listening');
+                statusText.innerText = 'LISTENING...';
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('mic-listening');
+                statusText.innerText = 'ONLINE';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                sendMessage(transcript);
+            };
+        } else {
+            micBtn.style.display = 'none';
+        }
+
+        micBtn.addEventListener('click', () => {
+            if (!recognition) return;
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+
+        // Speech Synthesis
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                equalizer.classList.add('speaking-active');
+                
+                utterance.onend = () => {
+                    equalizer.classList.remove('speaking-active');
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Output formatting
+        function appendMessage(sender, text) {
+            const card = document.createElement('div');
+            card.className = `hud-card p-3 rounded-lg ${sender === 'USER' ? 'border-cyan-500/40 ml-6 bg-cyan-950/20' : 'border-pink-500/40 mr-6 bg-pink-950/20'}`;
+            card.innerHTML = `
+                <p class="font-orbitron text-xs ${sender === 'USER' ? 'text-cyan-400' : 'text-pink-400'} mb-1">&gt; ${sender}</p>
+                <p class="text-slate-200 text-xs">${text}</p>
+            `;
+            chatBox.appendChild(card);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Form Submit
+        function sendMessage(text) {
+            if (!text.trim()) return;
+            appendMessage('USER', text);
+            userInput.value = '';
+
+            statusText.innerText = 'PROCESSING...';
+            setTimeout(() => {
+                const response = `[SUKI_AI]: Processing query "${text}". Standby for cyber updates.`;
+                appendMessage('SUKIBOT', response);
+                speak(response);
+                statusText.innerText = 'ONLINE';
+            }, 800);
+        }
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendMessage(userInput.value);
+        });
+
+        window.addEventListener('mlc-loaded', () => {
+            statusText.innerText = 'ONLINE';
+        });
+    </script>
+</body>
+</html>
