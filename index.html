@@ -218,7 +218,7 @@
             <div class="px-3 py-1 flex items-center justify-between bg-black/60 border-b border-purple-900/40 z-30 text-[10px] font-mono text-purple-300/80">
                 <div class="flex items-center gap-1">
                     <i class="fa-solid fa-link text-[8px] text-pink-400"></i>
-                    <span id="url-text" class="tracking-wider text-[9px]">lxlkensterlxl.github.io</span>
+                    <span id="url-text" class="tracking-wider text-[9px]">sukibot.cyber.hud</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button id="toggle-audio-btn" title="Mute/Unmute Audio" class="text-pink-400 hover:text-pink-300">
@@ -280,7 +280,7 @@
                                 <span>Meta Data</span>
                                 <span id="emotion-tag" class="text-pink-400 text-[8px]">EXPR: HAPPY</span>
                             </div>
-                            <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">LLM CORE:</span> <span id="active-llm-name">Llama-3.2 (WebGPU / Fallback)</span></div>
+                            <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">LLM CORE:</span> <span id="active-llm-name">Llama-3.2 (WebGPU)</span></div>
                             <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">VOICE TTS:</span> <span id="voice-name-tag" class="text-cyan-300">WebSpeech Dynamic</span></div>
                             <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">STATUS:</span> <span id="model-status-text" class="text-emerald-400 font-bold">[Speech Engine Ready]</span></div>
                         </div>
@@ -313,22 +313,467 @@
 
                 <!-- TACTICAL CONTROL GRID BUTTONS (6-PACK) -->
                 <div class="grid grid-cols-6 gap-1 z-30">
-                    <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-pink-500/40 hover:border-pink-400 transition hover:scale-105 active:scale-95" data-cmd="Report ASR microphone state and voice recognition readiness.">
+                    <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-pink-500/40 hover:border-pink-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Report ASR microphone state and voice recognition readiness.">
                         <i class="fa-solid fa-bolt text-pink-400 text-[10px]"></i>
-                        <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">ASR:</span>
+                        <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">ASR</span>
                         <span class="font-mono text-[7px] text-emerald-400">Active</span>
                     </button>
 
-                    <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-purple-500/40 hover:border-purple-400 transition hover:scale-105 active:scale-95" data-cmd="Check Energy Orb diagnostics and kitsune mana levels.">
+                    <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-purple-500/40 hover:border-purple-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Check Energy Orb diagnostics and kitsune mana levels.">
                         <i class="fa-solid fa-gem text-purple-400 text-[10px]"></i>
-                        <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Orb:</span>
+                        <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Orb</span>
                         <span class="font-mono text-[7px] text-emerald-400">Active</span>
                     </button>
 
-                    <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-cyan-500/40 hover:border-cyan-400 transition hover:scale-105 active:scale-95" data-cmd="Display core neural model specs and hardware acceleration status.">
+                    <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-cyan-500/40 hover:border-cyan-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Display core neural model specs and hardware acceleration status.">
                         <i class="fa-solid fa-microchip text-cyan-400 text-[10px]"></i>
-                        <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Core:</span>
-                        <span class="font-mono text-[7px] text-cyan-300">Llama-1B</span>
+                        <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Core</span>
+                        <span class="font-mono text-[7px] text-cyan-300">Llama</span>
                     </button>
 
-                    <button class="chip hud
+                    <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-pink-500/40 hover:border-pink-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Initiate full system diagnostic scan and neural recalibration.">
+                        <i class="fa-solid fa-shield-halved text-pink-400 text-[10px]"></i>
+                        <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Scan</span>
+                        <span class="font-mono text-[7px] text-emerald-400">Ready</span>
+                    </button>
+
+                    <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-purple-500/40 hover:border-purple-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Give me a cyber-anime greeting and introduce your capabilities!">
+                        <i class="fa-solid fa-terminal text-purple-400 text-[10px]"></i>
+                        <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Greet</span>
+                        <span class="font-mono text-[7px] text-purple-300">Run</span>
+                    </button>
+
+                    <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-cyan-500/40 hover:border-cyan-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Clear conversation logs and reset cache memory buffers.">
+                        <i class="fa-solid fa-rotate text-cyan-400 text-[10px]"></i>
+                        <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Purge</span>
+                        <span class="font-mono text-[7px] text-cyan-300">Reset</span>
+                    </button>
+                </div>
+
+                <!-- CHAT LOG / CONSOLE OUTPUT AREA -->
+                <div id="chat-container" class="hud-card p-2 rounded-xl border border-purple-500/40 space-y-2 text-xs font-mono min-h-[140px] max-h-[220px] overflow-y-auto">
+                    <div class="flex items-start gap-2 text-purple-300">
+                        <span class="text-pink-400 font-bold">[SUKI://SYS]</span>
+                        <div>Kitsune neural core loaded successfully. Type a command or speak into the microphone to converse!</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- CHAT INPUT & MIC FOOTER BAR -->
+            <div class="p-2 bg-purple-950/60 border-t border-pink-500/40 backdrop-blur-md z-30 flex items-center gap-2">
+                <button id="mic-btn" title="Toggle Voice Recognition (ASR)" class="w-10 h-10 rounded-xl bg-purple-900/80 border border-pink-500/60 flex items-center justify-center text-pink-400 hover:text-white hover:bg-pink-600 transition shadow-[0_0_10px_rgba(255,42,141,0.3)] cursor-pointer flex-none">
+                    <i id="mic-icon" class="fa-solid fa-microphone text-sm"></i>
+                </button>
+                
+                <div class="flex-1 relative flex items-center">
+                    <input id="chat-input" type="text" placeholder="Enter cyber command..." class="w-full bg-black/60 border border-purple-500/50 rounded-xl px-3 py-2 text-xs font-mono text-slate-100 placeholder-purple-400/60 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400">
+                </div>
+
+                <button id="send-btn" title="Send Command" class="w-10 h-10 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 border border-cyan-400/60 flex items-center justify-center text-cyan-200 hover:text-white hover:shadow-[0_0_12px_#00f0ff] transition cursor-pointer flex-none">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </div>
+
+            <!-- SETTINGS MODAL (HIDDEN BY DEFAULT) -->
+            <div id="settings-modal" class="absolute inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+                <div class="hud-card w-full max-w-xs p-4 rounded-2xl border border-cyan-400/60 space-y-3 font-mono text-xs">
+                    <div class="flex justify-between items-center border-b border-purple-800 pb-2">
+                        <span class="font-orbitron font-bold text-cyan-300">HUD SETTINGS</span>
+                        <button id="close-modal-btn" class="text-pink-400 hover:text-white"><i class="fa-solid fa-xmark text-sm"></i></button>
+                    </div>
+                    <div class="space-y-2 text-purple-200">
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1">TTS Voice Selection:</label>
+                            <select id="voice-select" class="w-full bg-black border border-purple-500/60 rounded p-1.5 text-xs text-cyan-300 focus:outline-none focus:border-cyan-400"></select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1">Avatar Emotion Preset:</label>
+                            <select id="emotion-select" class="w-full bg-black border border-purple-500/60 rounded p-1.5 text-xs text-pink-300 focus:outline-none focus:border-cyan-400">
+                                <option value="happy">Happy (Kitsune Smile)</option>
+                                <option value="surprised">Surprised (Wide Eyes)</option>
+                                <option value="blush">Blush (Shy Anime)</option>
+                                <option value="neutral">Neutral (Tactical)</option>
+                            </select>
+                        </div>
+                        <div class="pt-2 flex justify-end">
+                            <button id="save-settings-btn" class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-black font-bold rounded shadow-[0_0_8px_#00f0ff]">Apply Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT ENGINE -->
+    <script>
+        // Clock updater
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock-display').textContent = `${hours}:${minutes}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Canvas Avatar Renderer & State
+        const canvas = document.getElementById('sukiCanvas');
+        const ctx = canvas.getContext('2d');
+        let currentExpression = 'happy';
+        let blinkTimer = 0;
+        let isBlinking = false;
+        let mouthAnim = 0;
+        let isSpeaking = false;
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function setSukiExpression(expr) {
+            currentExpression = expr;
+            document.getElementById('emotion-tag').textContent = `EXPR: ${expr.toUpperCase()}`;
+            document.getElementById('emotion-select').value = expr;
+            addLog(`System`, `Expression updated to: ${expr}`);
+        }
+
+        document.getElementById('emotion-select').addEventListener('change', (e) => {
+            setSukiExpression(e.target.value);
+        });
+
+        // Canvas Drawing Loop
+        function drawAvatar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2 + 10;
+
+            // Handle Blink
+            blinkTimer++;
+            if (blinkTimer > 150 && Math.random() < 0.05) {
+                isBlinking = true;
+                blinkTimer = 0;
+            } else if (isBlinking && blinkTimer > 8) {
+                isBlinking = false;
+                blinkTimer = 0;
+            }
+
+            // Glow Backlight
+            const gradient = ctx.createRadialGradient(cx, cy, 20, cx, cy, 120);
+            gradient.addColorStop(0, 'rgba(236, 72, 153, 0.25)');
+            gradient.addColorStop(1, 'rgba(7, 5, 14, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Kitsune Ears
+            ctx.fillStyle = '#150d2a';
+            ctx.strokeStyle = '#ff2a8d';
+            ctx.lineWidth = 2;
+
+            // Left Ear
+            ctx.beginPath();
+            ctx.moveTo(cx - 55, cy - 40);
+            ctx.lineTo(cx - 90, cy - 100);
+            ctx.lineTo(cx - 30, cy - 70);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Right Ear
+            ctx.beginPath();
+            ctx.moveTo(cx + 55, cy - 40);
+            ctx.lineTo(cx + 90, cy - 100);
+            ctx.lineTo(cx + 30, cy - 70);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Head Silhouette
+            ctx.beginPath();
+            ctx.arc(cx, cy, 55, 0, Math.PI * 2);
+            ctx.fillStyle = '#0e081c';
+            ctx.fill();
+            ctx.strokeStyle = '#00f0ff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Face Details - Eyes
+            if (!isBlinking) {
+                ctx.fillStyle = currentExpression === 'surprised' ? '#ff2a8d' : '#00f0ff';
+                // Left Eye
+                ctx.beginPath();
+                ctx.arc(cx - 20, cy - 5, currentExpression === 'surprised' ? 9 : 7, 0, Math.PI * 2);
+                ctx.fill();
+                // Right Eye
+                ctx.beginPath();
+                ctx.arc(cx + 20, cy - 5, currentExpression === 'surprised' ? 9 : 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eye Shine
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(cx - 22, cy - 9, 3, 3);
+                ctx.fillRect(cx + 18, cy - 9, 3, 3);
+            } else {
+                // Blink lines
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx - 27, cy - 5); ctx.lineTo(cx - 13, cy - 5);
+                ctx.moveTo(cx + 13, cy - 5); ctx.lineTo(cx + 27, cy - 5);
+                ctx.stroke();
+            }
+
+            // Blush Marks
+            if (currentExpression === 'blush' || currentExpression === 'happy') {
+                ctx.fillStyle = 'rgba(255, 42, 141, 0.4)';
+                ctx.beginPath();
+                ctx.arc(cx - 32, cy + 10, 8, 0, Math.PI * 2);
+                ctx.arc(cx + 32, cy + 10, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Mouth (Lip Sync / Expression)
+            ctx.strokeStyle = '#ff2a8d';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (isSpeaking) {
+                mouthAnim = (mouthAnim + 0.3) % Math.PI;
+                let openH = 4 + Math.sin(mouthAnim) * 8;
+                ctx.fillStyle = '#ff2a8d';
+                ctx.arc(cx, cy + 22, openH, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (currentExpression === 'happy') {
+                ctx.arc(cx, cy + 18, 10, 0, Math.PI);
+                ctx.stroke();
+            } else if (currentExpression === 'surprised') {
+                ctx.arc(cx, cy + 22, 6, 0, Math.PI * 2);
+                ctx.stroke();
+            } else {
+                ctx.moveTo(cx - 8, cy + 20);
+                ctx.lineTo(cx + 8, cy + 20);
+                ctx.stroke();
+            }
+
+            requestAnimationFrame(drawAvatar);
+        }
+        drawAvatar();
+
+        canvas.addEventListener('click', () => {
+            const exprs = ['happy', 'surprised', 'blush', 'neutral'];
+            const next = exprs[(exprs.indexOf(currentExpression) + 1) % exprs.length];
+            setSukiExpression(next);
+        });
+
+        // Chat Console Logger
+        function addLog(sender, text) {
+            const chatContainer = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = 'flex items-start gap-2';
+            div.innerHTML = `<span class="text-pink-400 font-bold">[${sender}]</span><div class="text-slate-200">${text}</div>`;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Web Speech API TTS & ASR
+        let synth = window.speechSynthesis;
+        let voices = [];
+        let audioEnabled = true;
+
+        function loadVoices() {
+            voices = synth.getVoices();
+            const voiceSelect = document.getElementById('voice-select');
+            voiceSelect.innerHTML = '';
+            voices.forEach((v, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = `${v.name} (${v.lang})`;
+                voiceSelect.appendChild(opt);
+            });
+            if (voices.length > 0) {
+                document.getElementById('voice-name-tag').textContent = voices[0].name.substring(0, 16) + '...';
+            }
+        }
+        if (synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = loadVoices;
+        }
+        loadVoices();
+
+        function speakText(text) {
+            if (!audioEnabled || !synth) return;
+            synth.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            const voiceIdx = document.getElementById('voice-select').value;
+            if (voices[voiceIdx]) utter.voice = voices[voiceIdx];
+            utter.pitch = 1.2;
+            utter.rate = 1.05;
+
+            utter.onstart = () => {
+                isSpeaking = true;
+                document.getElementById('speech-state-badge').textContent = 'SPEAKING';
+                document.getElementById('speech-state-badge').className = 'text-[8px] font-mono text-cyan-400 font-bold animate-pulse';
+                document.getElementById('equalizer').classList.add('speaking-active');
+            };
+            utter.onend = () => {
+                isSpeaking = false;
+                document.getElementById('speech-state-badge').textContent = 'IDLE';
+                document.getElementById('speech-state-badge').className = 'text-[8px] font-mono text-pink-400 font-bold';
+                document.getElementById('equalizer').classList.remove('speaking-active');
+            };
+            synth.speak(utter);
+        }
+
+        // Audio Mute Toggle
+        document.getElementById('toggle-audio-btn').addEventListener('click', () => {
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('audio-icon');
+            icon.className = audioEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark text-pink-500';
+            addLog('System', audioEnabled ? 'Audio output enabled.' : 'Audio muted.');
+        });
+
+        // Speech Recognition (ASR) Setup
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isListening = false;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('chat-input').value = transcript;
+                handleUserCommand(transcript);
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                document.getElementById('mic-btn').classList.remove('mic-listening');
+            };
+        }
+
+        document.getElementById('mic-btn').addEventListener('click', () => {
+            if (!recognition) {
+                alert('Speech Recognition is not supported in this browser.');
+                return;
+            }
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+                document.getElementById('mic-btn').classList.remove('mic-listening');
+            } else {
+                recognition.start();
+                isListening = true;
+                document.getElementById('mic-btn').classList.add('mic-listening');
+                addLog('ASR', 'Listening for voice command...');
+            }
+        });
+
+        // WebLLM Engine Initialization & Chat Handling
+        let mlcEngine = null;
+        const selectedModel = "Llama-3.2-1B-Instruct-q4f32_1-MLC";
+
+        window.addEventListener('mlc-loaded', async () => {
+            try {
+                const loaderLabel = document.getElementById('llm-load-label');
+                const loaderPercent = document.getElementById('llm-load-percent');
+                const progressBar = document.getElementById('llm-progress-bar');
+
+                mlcEngine = await window.CreateMLCEngine(selectedModel, {
+                    initProgressCallback: (progress) => {
+                        const pct = Math.round(progress.progress * 100);
+                        loaderPercent.textContent = `${pct}%`;
+                        progressBar.style.width = `${pct}%`;
+                        loaderLabel.innerHTML = `<i class="fa-solid fa-brain text-pink-400 mr-1"></i>${progress.text}`;
+                    }
+                });
+
+                document.getElementById('llm-loader-container').style.display = 'none';
+                document.getElementById('model-status-text').textContent = '[WebGPU AI Online]';
+                addLog('SUKI://AI', 'WebLLM Llama-3.2 model initialized successfully!');
+            } catch (err) {
+                console.error(err);
+                document.getElementById('llm-load-label').textContent = 'WebLLM fallback mode active (CPU/Simulator).';
+                document.getElementById('model-status-text').textContent = '[Fallback Mode]';
+            }
+        });
+
+        async function handleUserCommand(text) {
+            if (!text.trim()) return;
+            addLog('USER', text);
+            document.getElementById('chat-input').value = '';
+
+            let responseText = "";
+            if (mlcEngine) {
+                try {
+                    const reply = await mlcEngine.chat.completions.create({
+                        messages: [
+                            { role: "system", content: "You are SukiBot, an advanced cyber-hud anime kitsune companion AI. Keep answers concise, futuristic, tech-savvy, and helpful." },
+                            { role: "user", content: text }
+                        ]
+                    });
+                    responseText = reply.choices[0].message.content;
+                } catch (e) {
+                    responseText = "Neural inference error encountered. Systems nominal.";
+                }
+            } else {
+                // Fallback deterministic smart responses
+                const lower = text.toLowerCase();
+                if (lower.includes('greet')) {
+                    responseText = "Kon'nichiwa, Commander! SukiBot online and fully synchronized with your cyber HUD.";
+                    setSukiExpression('happy');
+                } else if (lower.includes('asr') || lower.includes('mic')) {
+                    responseText = "ASR microphone status: Active and responsive to vocal commands.";
+                    setSukiExpression('surprised');
+                } else if (lower.includes('orb')) {
+                    responseText = "Energy Orb diagnostics: 100% mana capacity. Kitsune shields holding steady.";
+                    setSukiExpression('blush');
+                } else {
+                    responseText = `Command acknowledged: "${text}". All tactical subroutines operating at peak efficiency!`;
+                    setSukiExpression('happy');
+                }
+            }
+
+            addLog('SUKI', responseText);
+            speakText(responseText);
+        }
+
+        document.getElementById('send-btn').addEventListener('click', () => {
+            const val = document.getElementById('chat-input').value;
+            handleUserCommand(val);
+        });
+
+        document.getElementById('chat-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleUserCommand(e.target.value);
+            }
+        });
+
+        // 6-Pack Quick Chips Handler
+        document.querySelectorAll('.chip').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cmd = btn.getAttribute('data-cmd');
+                if (cmd) handleUserCommand(cmd);
+            });
+        });
+
+        // Settings Modal Controls
+        const settingsModal = document.getElementById('settings-modal');
+        document.getElementById('settings-modal-btn').addEventListener('click', () => {
+            settingsModal.classList.remove('hidden');
+        });
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+        document.getElementById('save-settings-btn').addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+            addLog('System', 'Settings updated successfully.');
+        });
+    </script>
+</body>
+</html>
