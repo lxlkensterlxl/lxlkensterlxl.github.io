@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -26,15 +26,17 @@
             theme: {
                 extend: {
                     colors: {
-                        cyberDark: '#07050e',
-                        cyberPanel: '#0e081c',
-                        cyberCard: '#150d2a',
+                        cyberDark: '#05030a',
+                        cyberPanel: '#0d0718',
+                        cyberCard: '#140c26',
+                        cyberBorder: '#2a164d',
                         cyberPurple: '#a855f7',
                         cyberPink: '#ec4899',
                         cyberCyan: '#06b6d4',
                         cyberNeonPink: '#ff2a8d',
                         cyberNeonCyan: '#00f0ff',
                         cyberNeonPurple: '#bf5af2',
+                        cyberYellow: '#ffe600'
                     },
                     fontFamily: {
                         orbitron: ['Orbitron', 'sans-serif'],
@@ -56,7 +58,6 @@
             font-family: 'Rajdhani', sans-serif;
             user-select: none;
             overflow-x: hidden;
-            min-height: 100dvh;
         }
 
         ::-webkit-scrollbar {
@@ -64,7 +65,7 @@
             height: 4px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(14, 8, 28, 0.8);
+            background: rgba(13, 7, 24, 0.8);
         }
         ::-webkit-scrollbar-thumb {
             background: #ff2a8d;
@@ -72,9 +73,10 @@
         }
 
         .hud-card {
-            background: rgba(18, 11, 36, 0.85);
+            background: rgba(16, 9, 32, 0.85);
             backdrop-filter: blur(8px);
             border: 1px solid rgba(191, 90, 242, 0.35);
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
 
         .scanlines {
@@ -82,20 +84,20 @@
                 to bottom,
                 rgba(255,255,255,0),
                 rgba(255,255,255,0) 50%,
-                rgba(0, 0, 0, 0.45) 50%,
-                rgba(0, 0, 0, 0.45)
+                rgba(0, 0, 0, 0.5) 50%,
+                rgba(0, 0, 0, 0.5)
             );
             background-size: 100% 4px;
         }
 
         .matrix-bg {
-            background-image: radial-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 0);
-            background-size: 12px 12px;
+            background-image: radial-gradient(rgba(0, 240, 255, 0.12) 1px, transparent 0);
+            background-size: 16px 16px;
         }
 
         @keyframes pulseGlow {
             0% { box-shadow: 0 0 0 0 rgba(255, 42, 141, 0.8); }
-            70% { box-shadow: 0 0 0 12px rgba(255, 42, 141, 0); }
+            70% { box-shadow: 0 0 0 14px rgba(255, 42, 141, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 42, 141, 0); }
         }
         .mic-listening {
@@ -145,179 +147,839 @@
         }
         
         .speaking-active .equalizer-bar {
-            animation: bounce 0.4s ease-in-out infinite alternate;
+            animation: bounce 0.35s ease-in-out infinite alternate;
         }
-        .speaking-active .equalizer-bar:nth-child(2) { animation-delay: 0.1s; }
-        .speaking-active .equalizer-bar:nth-child(3) { animation-delay: 0.2s; }
-        .speaking-active .equalizer-bar:nth-child(4) { animation-delay: 0.3s; }
-        .speaking-active .equalizer-bar:nth-child(5) { animation-delay: 0.15s; }
+        .speaking-active .equalizer-bar:nth-child(2) { animation-delay: 0.08s; }
+        .speaking-active .equalizer-bar:nth-child(3) { animation-delay: 0.16s; }
+        .speaking-active .equalizer-bar:nth-child(4) { animation-delay: 0.24s; }
+        .speaking-active .equalizer-bar:nth-child(5) { animation-delay: 0.12s; }
 
         @keyframes bounce {
             0% { height: 15%; }
             100% { height: 100%; }
         }
+
+        .glitch-text {
+            text-shadow: 2px 0 #00f0ff, -2px 0 #ff2a8d;
+        }
     </style>
 </head>
-<body class="min-h-[100dvh] flex items-center justify-center p-0 sm:p-4 bg-slate-950">
+<body class="min-h-dvh flex items-center justify-center p-0 sm:p-4 bg-slate-950">
 
-    <!-- iPhone Screen Frame Container -->
-    <div class="relative w-full max-w-[420px] h-[100dvh] sm:h-[890px] bg-black sm:rounded-[48px] p-2 sm:p-3 shadow-[0_0_60px_rgba(255,42,141,0.3)] border-0 sm:border-4 border-slate-900 flex flex-col overflow-hidden">
+    <!-- Screen Layout Wrapper: Frame view or Expanded Fullscreen -->
+    <div id="app-viewport" class="relative w-full max-w-[440px] sm:max-w-[480px] h-[100dvh] sm:h-[910px] bg-black sm:rounded-[48px] p-2 sm:p-3 shadow-[0_0_70px_rgba(255,42,141,0.3)] border-0 sm:border-4 border-slate-900 flex flex-col overflow-hidden transition-all duration-300">
         
         <!-- Dynamic Island / Top Notch -->
-        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-28 sm:w-32 h-5 sm:h-6 bg-black rounded-full z-50 flex items-center justify-between px-3 border border-slate-800">
+        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-full z-50 flex items-center justify-between px-3 border border-slate-800 shadow-md">
             <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center">
-                <div id="notch-dot" class="w-1 h-1 rounded-full bg-cyan-500/80"></div>
+                <div id="notch-dot" class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
             </div>
-            <div id="notch-speaker" class="w-2 h-1 rounded-full bg-purple-600/60"></div>
+            <span class="font-mono text-[9px] text-pink-400 tracking-tighter">SUKI_CORE v2</span>
+            <div id="notch-speaker" class="w-2 h-1 rounded-full bg-purple-600/80"></div>
         </div>
 
-        <!-- Inner Screen -->
+        <!-- Inner Cyber Container -->
         <div class="relative w-full h-full bg-[#06030c] rounded-[32px] sm:rounded-[38px] flex flex-col overflow-hidden border border-pink-500/30">
             
-            <!-- Scanlines & Grid Overlay -->
-            <div class="absolute inset-0 scanlines pointer-events-none z-40 opacity-20"></div>
-            <div class="absolute inset-0 matrix-bg pointer-events-none z-10"></div>
+            <!-- Scanlines & Matrix Overlays -->
+            <div id="scanlines-layer" class="absolute inset-0 scanlines pointer-events-none z-40 opacity-25"></div>
+            <div id="matrix-layer" class="absolute inset-0 matrix-bg pointer-events-none z-10"></div>
 
             <!-- Header HUD -->
-            <header class="relative z-30 pt-7 px-4 pb-2 border-b border-purple-500/30 bg-cyberDark/90 flex justify-between items-center">
+            <header class="relative z-30 pt-8 px-4 pb-2 border-b border-purple-500/30 bg-cyberDark/90 flex justify-between items-center backdrop-blur-md">
                 <div>
-                    <h1 class="font-orbitron font-extrabold text-sm tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-400">
-                        SUKIBOT // v2.0
-                    </h1>
-                    <p class="font-mono text-[10px] text-cyan-400/80">STATUS: <span id="status-text" class="text-pink-400">OFFLINE</span></p>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="font-orbitron font-extrabold text-sm tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-400 glitch-text">
+                            SUKIBOT // v2.0
+                        </h1>
+                        <span id="engine-badge" class="px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-950 border border-cyan-500/50 text-cyan-300">DEMO</span>
+                    </div>
+                    <p class="font-mono text-[10px] text-cyan-400/80 flex items-center gap-1">
+                        STATUS: <span id="status-text" class="text-pink-400 font-bold">READY</span>
+                    </p>
                 </div>
+                
                 <div class="flex items-center space-x-2">
-                    <div id="equalizer" class="flex items-end space-x-1 h-4 w-8">
+                    <!-- Equalizer -->
+                    <div id="equalizer" class="flex items-end space-x-0.5 h-4 w-7 px-0.5 border border-purple-500/30 rounded bg-cyberCard">
                         <div class="equalizer-bar w-1 bg-cyan-400 rounded-full"></div>
                         <div class="equalizer-bar w-1 bg-pink-500 rounded-full"></div>
                         <div class="equalizer-bar w-1 bg-purple-500 rounded-full"></div>
                         <div class="equalizer-bar w-1 bg-cyan-400 rounded-full"></div>
-                        <div class="equalizer-bar w-1 bg-pink-500 rounded-full"></div>
                     </div>
+                    
+                    <!-- HUD Controls Buttons -->
+                    <button id="toggle-sound-btn" title="Toggle Sound FX" class="w-7 h-7 rounded bg-cyberCard border border-purple-500/40 text-cyan-400 hover:text-pink-400 text-xs flex items-center justify-center transition">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                    <button id="toggle-scanlines-btn" title="Toggle Scanlines" class="w-7 h-7 rounded bg-cyberCard border border-purple-500/40 text-cyan-400 hover:text-pink-400 text-xs flex items-center justify-center transition">
+                        <i class="fa-solid fa-tv"></i>
+                    </button>
+                    <button id="expand-frame-btn" title="Expand View" class="hidden sm:flex w-7 h-7 rounded bg-cyberCard border border-purple-500/40 text-cyan-400 hover:text-pink-400 text-xs items-center justify-center transition">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
                 </div>
             </header>
 
+            <!-- Model Selection Bar / Download HUD -->
+            <section class="relative z-30 px-3 py-1.5 bg-cyberPanel/90 border-b border-purple-500/20 flex flex-col space-y-1 font-mono text-[11px]">
+                <div class="flex justify-between items-center">
+                    <label for="model-select" class="text-pink-400 text-[10px]">AI ENGINE MODEL:</label>
+                    <select id="model-select" class="bg-cyberDark border border-cyan-500/40 text-cyan-300 text-[10px] rounded px-1.5 py-0.5 focus:outline-none">
+                        <option value="simulated">⚡ FAST DEMO SIMULATOR (No VRAM requirement)</option>
+                        <option value="Qwen2.5-0.5B-Instruct-q4f16_1-MLC">Qwen 2.5 0.5B (Fast WebGPU)</option>
+                        <option value="Llama-3.2-1B-Instruct-q4f16_1-MLC">Llama 3.2 1B (High Quality WebGPU)</option>
+                        <option value="SmolLM2-360M-Instruct-q4f16_1-MLC">SmolLM2 360M (Ultra Lightweight)</option>
+                    </select>
+                </div>
+                
+                <!-- Model Download Bar -->
+                <div id="download-progress-container" class="hidden flex-col space-y-0.5">
+                    <div class="flex justify-between text-[9px] text-cyan-300">
+                        <span id="progress-text">Initializing Model Engine...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-cyberDark rounded-full overflow-hidden border border-cyan-500/30">
+                        <div id="progress-bar" class="h-full bg-gradient-to-r from-cyan-400 to-pink-500 w-0 transition-all duration-200"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Anime Cyber Avatar Canvas Section -->
+            <div class="relative w-full h-44 sm:h-48 bg-gradient-to-b from-cyberDark via-cyberCard to-cyberPanel border-b border-purple-500/30 flex items-center justify-center overflow-hidden">
+                <!-- Interactive Canvas Render -->
+                <canvas id="avatar-canvas" class="w-full h-full z-20 cursor-pointer"></canvas>
+                
+                <!-- Telemetry & Diagnostic HUD Overlay -->
+                <div class="absolute top-2 left-2 z-20 font-mono text-[9px] text-cyan-400/90 pointer-events-none space-y-0.5 bg-black/40 p-1.5 rounded border border-cyan-500/20">
+                    <div>FPS: <span id="fps-counter" class="text-pink-400">60</span></div>
+                    <div>LATENCY: <span id="latency-val" class="text-green-400">12ms</span></div>
+                    <div>NEURAL SYNC: <span id="neural-sync" class="text-cyan-300">100%</span></div>
+                </div>
+
+                <div class="absolute top-2 right-2 z-20 font-mono text-[9px] text-pink-400/90 pointer-events-none bg-black/40 p-1.5 rounded border border-pink-500/20 text-right">
+                    <div>MODE: <span id="avatar-state" class="text-cyan-300">IDLE</span></div>
+                    <div>VRAM: <span id="vram-counter" class="text-purple-300">DYNAMIC</span></div>
+                </div>
+
+                <div class="absolute bottom-1 right-2 z-20 font-mono text-[9px] text-slate-400 pointer-events-none">
+                    TAP AVATAR TO TRIGGER EXPRESSION
+                </div>
+            </div>
+
             <!-- Chat Output Container -->
-            <main id="chat-box" class="relative z-30 flex-1 overflow-y-auto p-4 space-y-3 font-rajdhani text-sm no-scrollbar">
+            <main id="chat-box" class="relative z-30 flex-1 overflow-y-auto p-3 space-y-2.5 font-rajdhani text-sm no-scrollbar">
                 <div class="hud-card p-3 rounded-lg cyber-corner">
-                    <p class="font-orbitron text-xs text-cyan-400 mb-1">&gt; SYSTEM INIT</p>
-                    <p class="text-slate-300">Welcome, Operator. WebLLM module ready. Tap microphone or type a command below to initialize connection.</p>
+                    <p class="font-orbitron text-xs text-cyan-400 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-terminal text-pink-500"></i> SYSTEM INITIALIZED
+                    </p>
+                    <p class="text-slate-300 text-xs leading-relaxed">
+                        Konnichiwa! I am <strong class="text-pink-400">SukiBot v2.0</strong>, your Cyberpunk AI assistant. 
+                        WebLLM local execution is ready. Select a model above or test queries immediately in fast demo mode!
+                    </p>
                 </div>
             </main>
 
+            <!-- Quick Action Prompt Chips -->
+            <div id="quick-chips" class="relative z-30 px-3 py-1 bg-cyberDark/80 border-t border-purple-500/20 flex gap-1.5 overflow-x-auto no-scrollbar font-mono text-[10px]">
+                <button class="chip-btn px-2 py-1 rounded bg-cyberCard border border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/20 whitespace-nowrap transition">
+                    ⚡ Neural Status
+                </button>
+                <button class="chip-btn px-2 py-1 rounded bg-cyberCard border border-pink-500/40 text-pink-300 hover:bg-pink-500/20 whitespace-nowrap transition">
+                    🎌 Cyberpunk Haiku
+                </button>
+                <button class="chip-btn px-2 py-1 rounded bg-cyberCard border border-purple-500/40 text-purple-300 hover:bg-purple-500/20 whitespace-nowrap transition">
+                    💻 Write Python Script
+                </button>
+                <button class="chip-btn px-2 py-1 rounded bg-cyberCard border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/20 whitespace-nowrap transition">
+                    🌌 Cyber City Lore
+                </button>
+            </div>
+
             <!-- Control & Input Dock -->
-            <footer class="relative z-30 p-3 bg-cyberPanel/90 border-t border-purple-500/30 space-y-2">
+            <footer class="relative z-30 p-2.5 bg-cyberPanel/90 border-t border-purple-500/30 space-y-2">
                 <form id="chat-form" class="flex items-center space-x-2">
-                    <button type="button" id="mic-btn" class="w-10 h-10 rounded-lg bg-cyberCard border border-pink-500/40 text-pink-400 flex items-center justify-center hover:bg-pink-500/20 transition-all">
+                    <button type="button" id="mic-btn" title="Voice Input" class="w-9 h-9 rounded-lg bg-cyberCard border border-pink-500/40 text-pink-400 flex items-center justify-center hover:bg-pink-500/20 transition-all shrink-0">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
-                    <input type="text" id="user-input" placeholder="Type prompt..." class="flex-1 bg-cyberCard border border-purple-500/40 rounded-lg px-3 py-2 text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-400">
-                    <button type="submit" class="w-10 h-10 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center font-bold">
+
+                    <input type="text" id="user-input" placeholder="Type neural prompt..." class="flex-1 bg-cyberCard border border-purple-500/40 rounded-lg px-3 py-2 text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-400 shadow-inner">
+
+                    <button type="submit" id="send-btn" title="Send Message" class="w-9 h-9 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center font-bold hover:brightness-110 transition shrink-0">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </form>
+
+                <!-- Actions Toolbar -->
+                <div class="flex justify-between items-center text-[10px] font-mono text-slate-400 px-1">
+                    <div class="flex space-x-2">
+                        <button id="clear-chat-btn" class="hover:text-pink-400 transition"><i class="fa-solid fa-trash-can"></i> CLEAR</button>
+                        <button id="export-chat-btn" class="hover:text-cyan-400 transition"><i class="fa-solid fa-file-export"></i> EXPORT LOG</button>
+                    </div>
+                    <span id="char-count" class="text-purple-400/80">0 CHARS</span>
+                </div>
             </footer>
         </div>
     </div>
 
-    <!-- Interaction & Engine Scripts -->
+    <!-- Main Logic Script -->
     <script>
-        const chatBox = document.getElementById('chat-box');
-        const chatForm = document.getElementById('chat-form');
-        const userInput = document.getElementById('user-input');
-        const micBtn = document.getElementById('mic-btn');
-        const statusText = document.getElementById('status-text');
-        const equalizer = document.getElementById('equalizer');
+        // --- Web Audio Synthesizer Sound Engine ---
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
 
-        // Web Speech API Integration
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
-        let isListening = false;
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+            }
 
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = 'en-US';
+            playBeep(freq = 600, duration = 0.05, type = 'sine') {
+                if (!this.enabled) return;
+                this.init();
+                if (!this.ctx) return;
 
-            recognition.onstart = () => {
-                isListening = true;
-                micBtn.classList.add('mic-listening');
-                statusText.innerText = 'LISTENING...';
-            };
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
 
-            recognition.onend = () => {
-                isListening = false;
-                micBtn.classList.remove('mic-listening');
-                statusText.innerText = 'ONLINE';
-            };
-
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                userInput.value = transcript;
-                sendMessage(transcript);
-            };
-        } else {
-            micBtn.style.display = 'none';
+            playClick() { this.playBeep(800, 0.04, 'triangle'); }
+            playReceive() { this.playBeep(1200, 0.08, 'sine'); }
+            playError() { this.playBeep(250, 0.2, 'sawtooth'); }
         }
 
-        micBtn.addEventListener('click', () => {
-            if (!recognition) return;
-            if (isListening) {
-                recognition.stop();
-            } else {
-                recognition.start();
-            }
-        });
+        const sounds = new SoundEngine();
 
-        // Speech Synthesis
-        function speak(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                equalizer.classList.add('speaking-active');
+        // --- Avatar Interactive Rendering Engine ---
+        class CyberAvatarEngine {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.state = 'IDLE'; // IDLE, TALKING, LISTENING, THINKING
+                this.mouthOpen = 0;
+                this.eyeBlink = 0;
+                this.blinkTimer = 0;
+                this.pointerX = 0;
+                this.pointerY = 0;
+                this.targetPointerX = 0;
+                this.targetPointerY = 0;
+                this.particles = [];
                 
-                utterance.onend = () => {
-                    equalizer.classList.remove('speaking-active');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+
+                // Track cursor/touch
+                window.addEventListener('mousemove', (e) => this.updatePointer(e));
+                window.addEventListener('touchmove', (e) => {
+                    if (e.touches[0]) this.updatePointer(e.touches[0]);
+                });
+
+                this.canvas.addEventListener('click', () => {
+                    sounds.playClick();
+                    const states = ['IDLE', 'TALKING', 'LISTENING', 'THINKING'];
+                    const nextIndex = (states.indexOf(this.state) + 1) % states.length;
+                    this.setState(states[nextIndex]);
+                });
+
+                this.initParticles();
+            }
+
+            resize() {
+                const rect = this.canvas.parentElement.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            updatePointer(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                this.targetPointerX = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+                this.targetPointerY = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+            }
+
+            initParticles() {
+                this.particles = [];
+                for (let i = 0; i < 35; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        radius: Math.random() * 1.8 + 0.5,
+                        speedX: (Math.random() - 0.5) * 0.8,
+                        speedY: (Math.random() - 0.5) * 0.8,
+                        color: Math.random() > 0.5 ? '#00f0ff' : '#ff2a8d'
+                    });
+                }
+            }
+
+            setState(newState) {
+                this.state = newState;
+                document.getElementById('avatar-state').innerText = newState;
+            }
+
+            drawParticles() {
+                this.particles.forEach(p => {
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+
+                    if (p.x < 0) p.x = this.canvas.width;
+                    if (p.x > this.canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = this.canvas.height;
+                    if (p.y > this.canvas.height) p.y = 0;
+
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.shadowBlur = 6;
+                    this.ctx.shadowColor = p.color;
+                    this.ctx.fill();
+                    this.ctx.shadowBlur = 0;
+                });
+            }
+
+            render() {
+                const ctx = this.ctx;
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                const cx = width / 2;
+                const cy = height / 2 + 10;
+
+                // Smooth pointer tracking
+                this.pointerX += (this.targetPointerX - this.pointerX) * 0.08;
+                this.pointerY += (this.targetPointerY - this.pointerY) * 0.08;
+
+                ctx.clearRect(0, 0, width, height);
+
+                // Background particles
+                this.drawParticles();
+
+                // Blink timing logic
+                this.blinkTimer++;
+                if (this.blinkTimer > 180) {
+                    this.eyeBlink = Math.sin((this.blinkTimer - 180) * 0.3);
+                    if (this.blinkTimer > 190) {
+                        this.eyeBlink = 0;
+                        this.blinkTimer = 0;
+                    }
+                }
+
+                // Mouth movement dynamically calculated
+                if (this.state === 'TALKING') {
+                    this.mouthOpen = 0.3 + Math.abs(Math.sin(Date.now() * 0.015)) * 0.7;
+                } else if (this.state === 'LISTENING') {
+                    this.mouthOpen = 0.15;
+                } else if (this.state === 'THINKING') {
+                    this.mouthOpen = 0.05;
+                } else {
+                    this.mouthOpen = 0;
+                }
+
+                // 1. Cyber Halo Ring (Behind Head)
+                ctx.save();
+                ctx.translate(cx, cy - 20);
+                ctx.beginPath();
+                ctx.arc(0, 0, 75, 0, Math.PI * 2);
+                ctx.strokeStyle = this.state === 'THINKING' ? '#ffe600' : '#ff2a8d';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([8, 6]);
+                ctx.rotate(Date.now() * 0.001);
+                ctx.stroke();
+                ctx.restore();
+
+                // 2. Anime Hair (Back layer)
+                ctx.fillStyle = '#1e1136';
+                ctx.beginPath();
+                ctx.arc(cx, cy - 10, 65, Math.PI, 0, false);
+                ctx.fill();
+
+                // 3. Face Base Shape
+                ctx.save();
+                ctx.translate(this.pointerX * 6, this.pointerY * 4);
+
+                ctx.fillStyle = '#fce7f3';
+                ctx.beginPath();
+                ctx.moveTo(cx - 40, cy - 35);
+                ctx.quadraticCurveTo(cx - 42, cy + 20, cx, cy + 42);
+                ctx.quadraticCurveTo(cx + 42, cy + 20, cx + 40, cy - 35);
+                ctx.closePath();
+                ctx.fill();
+
+                // Cyber Jaw Lines
+                ctx.strokeStyle = '#bf5af2';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // 4. Cyber Headset & Visor Gear
+                ctx.fillStyle = '#0f0821';
+                ctx.fillRect(cx - 52, cy - 25, 14, 30);
+                ctx.fillRect(cx + 38, cy - 25, 14, 30);
+                ctx.strokeStyle = '#00f0ff';
+                ctx.strokeRect(cx - 52, cy - 25, 14, 30);
+                ctx.strokeRect(cx + 38, cy - 25, 14, 30);
+
+                // Headset Glowing Nodes
+                ctx.fillStyle = this.state === 'LISTENING' ? '#ff2a8d' : '#00f0ff';
+                ctx.beginPath();
+                ctx.arc(cx - 45, cy - 10, 3, 0, Math.PI * 2);
+                ctx.arc(cx + 45, cy - 10, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 5. Eyes & Cybernetic Eye
+                const eyeY = cy - 10;
+                const eyeDist = 18;
+                const scaleY = Math.max(0.08, 1 - this.eyeBlink);
+
+                // Left Eye (Anime Eye)
+                ctx.save();
+                ctx.translate(cx - eyeDist + this.pointerX * 4, eyeY + this.pointerY * 3);
+                ctx.scale(1, scaleY);
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 8, 11, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#00f0ff';
+                ctx.beginPath();
+                ctx.ellipse(0, 2, 4, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-2, -3, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Right Eye (Cybernetic Glowing Eye)
+                ctx.save();
+                ctx.translate(cx + eyeDist + this.pointerX * 4, eyeY + this.pointerY * 3);
+                ctx.scale(1, scaleY);
+                ctx.fillStyle = '#1e1b4b';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 9, 11, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Glowing Cyber Lens
+                ctx.fillStyle = '#ff2a8d';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff2a8d';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 5, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Reticle crosshair
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 0.8;
+                ctx.beginPath();
+                ctx.moveTo(-6, 0); ctx.lineTo(6, 0);
+                ctx.moveTo(0, -6); ctx.lineTo(0, 6);
+                ctx.stroke();
+                ctx.restore();
+
+                // Eyebrows
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx - 26, cy - 24 + (this.state === 'THINKING' ? -3 : 0));
+                ctx.lineTo(cx - 10, cy - 22);
+                ctx.moveTo(cx + 10, cy - 22);
+                ctx.lineTo(cx + 26, cy - 24 + (this.state === 'THINKING' ? 3 : 0));
+                ctx.stroke();
+
+                // 6. Mouth Render (Dynamic Open & Expression)
+                const mouthY = cy + 20;
+                ctx.fillStyle = '#9f1239';
+                ctx.strokeStyle = '#ff2a8d';
+                ctx.lineWidth = 1.5;
+
+                ctx.beginPath();
+                if (this.mouthOpen > 0.05) {
+                    const h = 2 + this.mouthOpen * 10;
+                    ctx.ellipse(cx + this.pointerX * 2, mouthY, 6, h, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                } else {
+                    ctx.moveTo(cx - 6, mouthY);
+                    ctx.quadraticCurveTo(cx, mouthY + (this.state === 'THINKING' ? -2 : 3), cx + 6, mouthY);
+                    ctx.stroke();
+                }
+
+                // 7. Anime Hair (Front Bangs & Spikes)
+                ctx.fillStyle = '#2e1065';
+                ctx.beginPath();
+                ctx.moveTo(cx - 44, cy - 28);
+                ctx.lineTo(cx - 20, cy - 5);
+                ctx.lineTo(cx - 10, cy - 25);
+                ctx.lineTo(cx, cy + 2);
+                ctx.lineTo(cx + 12, cy - 25);
+                ctx.lineTo(cx + 24, cy - 8);
+                ctx.lineTo(cx + 44, cy - 28);
+                ctx.lineTo(cx + 35, cy - 50);
+                ctx.lineTo(cx - 35, cy - 50);
+                ctx.closePath();
+                ctx.fill();
+
+                // Cyber Hair Highlights
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(cx - 30, cy - 40);
+                ctx.lineTo(cx - 15, cy - 20);
+                ctx.moveTo(cx + 10, cy - 38);
+                ctx.lineTo(cx + 22, cy - 18);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
+        // --- Simulated LLM Engine (Resilient Fallback) ---
+        class SimulatedLLMEngine {
+            async generate(prompt, onChunk) {
+                const text = prompt.toLowerCase();
+                let response = "";
+
+                if (text.includes("haiku")) {
+                    response = "Neon shadows fall,\nDigital heart beats in sync,\nCyber city wakes.";
+                } else if (text.includes("status") || text.includes("neural")) {
+                    response = "[SYSTEM DIAGNOSTIC]\nCore Temperature: 34°C\nNeural Mesh: Operational (100% Sync)\nVRAM Buffer: Nominal\nAll sub-routines running smoothly.";
+                } else if (text.includes("python") || text.includes("script")) {
+                    response = "Here is your requested Python snippet:\n\n```python\ndef cyber_pulse():\n    status = 'ONLINE'\n    print(f'[SUKI_AI] Neural Status: {status}')\n\ncyber_pulse()\n```";
+                } else if (text.includes("lore") || text.includes("city")) {
+                    response = "Neo-Tokyo, Sector 7: High above the rain-slicked pavement, quantum datalinks illuminate the smog. SukiBot monitors all traffic nodes to keep operators safe.";
+                } else {
+                    response = `[SUKIBOT RESPONSE]: I have analyzed your neural query: "${prompt}". All local subsystems are locked and operational. Command confirmed.`;
+                }
+
+                // Stream simulated chunks
+                const words = response.split(" ");
+                for (let i = 0; i < words.length; i++) {
+                    await new Promise(r => setTimeout(r, 40));
+                    onChunk(words[i] + (i === words.length - 1 ? "" : " "));
+                }
+            }
+        }
+
+        // --- WebLLM Real / Fallback Controller ---
+        class WebLLMController {
+            constructor() {
+                this.engine = null;
+                this.simulated = new SimulatedLLMEngine();
+                this.currentModel = "simulated";
+                this.isInit = false;
+            }
+
+            async setModel(modelId, onProgress) {
+                this.currentModel = modelId;
+                document.getElementById('engine-badge').innerText = modelId === 'simulated' ? 'DEMO' : 'WEBGPU';
+
+                if (modelId === 'simulated') {
+                    this.isInit = true;
+                    return;
+                }
+
+                if (!window.webLLM) {
+                    alert("WebLLM library is still loading or WebGPU is unsupported on this browser. Switching to Simulated Mode.");
+                    document.getElementById('model-select').value = 'simulated';
+                    this.currentModel = 'simulated';
+                    return;
+                }
+
+                try {
+                    this.engine = new window.webLLM.MLCEngine();
+                    this.engine.setInitProgressCallback((report) => {
+                        if (onProgress) onProgress(report.text, report.progress);
+                    });
+                    await this.engine.reload(modelId);
+                    this.isInit = true;
+                } catch (err) {
+                    console.error("WebLLM Init failed:", err);
+                    alert("WebGPU initialization failed or unsupported on this device. Fallback to Demo Mode.");
+                    this.currentModel = 'simulated';
+                    document.getElementById('model-select').value = 'simulated';
+                }
+            }
+
+            async generateStream(prompt, onChunk) {
+                if (this.currentModel === 'simulated' || !this.engine) {
+                    await this.simulated.generate(prompt, onChunk);
+                    return;
+                }
+
+                try {
+                    const messages = [
+                        { role: "system", content: "You are SukiBot, an upbeat, helpful, cyberpunk anime AI assistant." },
+                        { role: "user", content: prompt }
+                    ];
+                    const chunks = await this.engine.chat.completions.create({
+                        messages,
+                        stream: true,
+                    });
+
+                    for await (const chunk of chunks) {
+                        const content = chunk.choices[0]?.delta?.content || "";
+                        if (content) onChunk(content);
+                    }
+                } catch (e) {
+                    console.error("Stream error:", e);
+                    onChunk("\n[Neural Stream Interrupted. Falling back to simulated diagnostic mode.]");
+                }
+            }
+        }
+
+        // --- Application Main Initialization & DOM binding ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const avatar = new CyberAvatarEngine('avatar-canvas');
+            const llm = new WebLLMController();
+
+            // FPS Counter
+            let lastFrameTime = performance.now();
+            let frameCount = 0;
+            const fpsElem = document.getElementById('fps-counter');
+
+            function animLoop() {
+                avatar.render();
+                frameCount++;
+                const now = performance.now();
+                if (now - lastFrameTime >= 1000) {
+                    fpsElem.innerText = frameCount;
+                    frameCount = 0;
+                    lastFrameTime = now;
+                }
+                requestAnimationFrame(animLoop);
+            }
+            requestAnimationFrame(animLoop);
+
+            // DOM Elements
+            const chatBox = document.getElementById('chat-box');
+            const chatForm = document.getElementById('chat-form');
+            const userInput = document.getElementById('user-input');
+            const micBtn = document.getElementById('mic-btn');
+            const statusText = document.getElementById('status-text');
+            const equalizer = document.getElementById('equalizer');
+            const modelSelect = document.getElementById('model-select');
+            const progressContainer = document.getElementById('download-progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const progressPercent = document.getElementById('progress-percent');
+            const charCount = document.getElementById('char-count');
+
+            // Sound Toggle
+            const toggleSoundBtn = document.getElementById('toggle-sound-btn');
+            toggleSoundBtn.addEventListener('click', () => {
+                sounds.enabled = !sounds.enabled;
+                toggleSoundBtn.classList.toggle('text-slate-500', !sounds.enabled);
+                sounds.playClick();
+            });
+
+            // Scanlines Toggle
+            const toggleScanlinesBtn = document.getElementById('toggle-scanlines-btn');
+            const scanlinesLayer = document.getElementById('scanlines-layer');
+            toggleScanlinesBtn.addEventListener('click', () => {
+                scanlinesLayer.classList.toggle('hidden');
+                sounds.playClick();
+            });
+
+            // Expand Frame Toggle
+            const expandFrameBtn = document.getElementById('expand-frame-btn');
+            const appViewport = document.getElementById('app-viewport');
+            expandFrameBtn.addEventListener('click', () => {
+                appViewport.classList.toggle('sm:max-w-[480px]');
+                appViewport.classList.toggle('sm:max-w-[900px]');
+                sounds.playClick();
+                setTimeout(() => avatar.resize(), 300);
+            });
+
+            // Model Switch Handler
+            modelSelect.addEventListener('change', async (e) => {
+                sounds.playClick();
+                const modelId = e.target.value;
+                if (modelId === 'simulated') {
+                    progressContainer.classList.add('hidden');
+                    await llm.setModel('simulated');
+                    return;
+                }
+
+                progressContainer.classList.remove('hidden');
+                statusText.innerText = 'LOADING MODEL...';
+                avatar.setState('THINKING');
+
+                await llm.setModel(modelId, (text, progress) => {
+                    const pct = Math.round((progress || 0) * 100);
+                    progressBar.style.width = pct + '%';
+                    progressPercent.innerText = pct + '%';
+                    progressText.innerText = text || 'Downloading model weights...';
+                });
+
+                statusText.innerText = 'ONLINE';
+                avatar.setState('IDLE');
+                setTimeout(() => progressContainer.classList.add('hidden'), 2000);
+            });
+
+            // Speech Recognition
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            let recognition = null;
+            let isListening = false;
+
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => {
+                    isListening = true;
+                    micBtn.classList.add('mic-listening');
+                    statusText.innerText = 'LISTENING...';
+                    avatar.setState('LISTENING');
+                    sounds.playClick();
                 };
-                
-                window.speechSynthesis.speak(utterance);
+
+                recognition.onend = () => {
+                    isListening = false;
+                    micBtn.classList.remove('mic-listening');
+                    statusText.innerText = 'ONLINE';
+                    if (avatar.state === 'LISTENING') avatar.setState('IDLE');
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    userInput.value = transcript;
+                    handleSend(transcript);
+                };
+            } else {
+                micBtn.style.display = 'none';
             }
-        }
 
-        // Output formatting
-        function appendMessage(sender, text) {
-            const card = document.createElement('div');
-            card.className = `hud-card p-3 rounded-lg ${sender === 'USER' ? 'border-cyan-500/40 ml-6 bg-cyan-950/20' : 'border-pink-500/40 mr-6 bg-pink-950/20'}`;
-            card.innerHTML = `
-                <p class="font-orbitron text-xs ${sender === 'USER' ? 'text-cyan-400' : 'text-pink-400'} mb-1">&gt; ${sender}</p>
-                <p class="text-slate-200 text-xs">${text}</p>
-            `;
-            chatBox.appendChild(card);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+            micBtn.addEventListener('click', () => {
+                if (!recognition) return;
+                if (isListening) recognition.stop();
+                else recognition.start();
+            });
 
-        // Form Submit
-        function sendMessage(text) {
-            if (!text.trim()) return;
-            appendMessage('USER', text);
-            userInput.value = '';
+            // TTS Speech Synthesis Sync
+            function speak(text) {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel();
+                    const cleanText = text.replace(/\[.*?\]/g, '').replace(/```[\s\S]*?```/g, 'Code block outputted.');
+                    const utterance = new SpeechSynthesisUtterance(cleanText);
+                    
+                    equalizer.classList.add('speaking-active');
+                    avatar.setState('TALKING');
+                    
+                    utterance.onend = () => {
+                        equalizer.classList.remove('speaking-active');
+                        avatar.setState('IDLE');
+                    };
+                    utterance.onerror = () => {
+                        equalizer.classList.remove('speaking-active');
+                        avatar.setState('IDLE');
+                    };
+                    
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
 
-            statusText.innerText = 'PROCESSING...';
-            setTimeout(() => {
-                const response = `[SUKI_AI]: Processing query "${text}". Standby for cyber updates.`;
-                appendMessage('SUKIBOT', response);
-                speak(response);
+            // Append Chat Card
+            function createMessageCard(sender) {
+                const card = document.createElement('div');
+                card.className = `hud-card p-3 rounded-lg ${sender === 'USER' ? 'border-cyan-500/40 ml-6 bg-cyan-950/20' : 'border-pink-500/40 mr-6 bg-pink-950/20'}`;
+                card.innerHTML = `
+                    <p class="font-orbitron text-xs ${sender === 'USER' ? 'text-cyan-400' : 'text-pink-400'} mb-1 font-bold">&gt; ${sender}</p>
+                    <div class="msg-content text-slate-200 text-xs font-mono leading-relaxed whitespace-pre-wrap"></div>
+                `;
+                chatBox.appendChild(card);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                return card.querySelector('.msg-content');
+            }
+
+            // Handle Input Submission
+            async function handleSend(text) {
+                if (!text || !text.trim()) return;
+
+                sounds.playClick();
+                userInput.value = '';
+                charCount.innerText = '0 CHARS';
+
+                // Render User Prompt
+                const userContentNode = createMessageCard('USER');
+                userContentNode.innerText = text;
+
+                // Prepare Bot Response Container
+                statusText.innerText = 'PROCESSING...';
+                avatar.setState('THINKING');
+
+                const botContentNode = createMessageCard('SUKIBOT');
+                let fullResponse = "";
+
+                await llm.generateStream(text, (chunk) => {
+                    if (!fullResponse) avatar.setState('TALKING');
+                    fullResponse += chunk;
+                    botContentNode.innerText = fullResponse;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                });
+
                 statusText.innerText = 'ONLINE';
-            }, 800);
-        }
+                sounds.playReceive();
+                speak(fullResponse);
+            }
 
-        chatForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            sendMessage(userInput.value);
-        });
+            // Form Submit Event
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                handleSend(userInput.value);
+            });
 
-        window.addEventListener('mlc-loaded', () => {
-            statusText.innerText = 'ONLINE';
+            // Input Char Counter
+            userInput.addEventListener('input', (e) => {
+                charCount.innerText = `${e.target.value.length} CHARS`;
+            });
+
+            // Quick Prompt Chips
+            document.querySelectorAll('.chip-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const text = btn.innerText.replace(/^[^\w]+/, '').trim();
+                    userInput.value = text;
+                    handleSend(text);
+                });
+            });
+
+            // Clear Chat
+            document.getElementById('clear-chat-btn').addEventListener('click', () => {
+                sounds.playClick();
+                chatBox.innerHTML = `
+                    <div class="hud-card p-3 rounded-lg cyber-corner">
+                        <p class="font-orbitron text-xs text-cyan-400 mb-1">&gt; SYSTEM RESET</p>
+                        <p class="text-slate-300 text-xs">Chat buffer cleared. Ready for new input.</p>
+                    </div>
+                `;
+            });
+
+            // Export Chat Log
+            document.getElementById('export-chat-btn').addEventListener('click', () => {
+                sounds.playClick();
+                let logText = "=== SUKIBOT NEURAL CHAT LOG ===\n\n";
+                chatBox.querySelectorAll('.hud-card').forEach(card => {
+                    logText += card.innerText + "\n-------------------------\n";
+                });
+
+                const blob = new Blob([logText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `sukibot-chat-log-${Date.now()}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
         });
     </script>
 </body>
