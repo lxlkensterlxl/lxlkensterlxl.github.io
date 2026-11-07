@@ -14,10 +14,10 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
-    <!-- WebLLM Engine CDN Import -->
+    <!-- WebLLM Engine CDN Module Import -->
     <script type="module">
-        import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
-        window.CreateMLCEngine = CreateMLCEngine;
+        import * as webLLM from "https://esm.run/@mlc-ai/web-llm";
+        window.webLLM = webLLM;
         window.dispatchEvent(new CustomEvent('mlc-loaded'));
     </script>
 
@@ -234,7 +234,7 @@
             <!-- MAIN HUD CONTAINER (SCROLLABLE) -->
             <div class="flex-1 overflow-y-auto z-20 p-2.5 space-y-2 no-scrollbar">
 
-                <!-- CYBER ANIME STAGE DISPLAY WITH CANVAS AVATAR -->
+                <!-- CYBER ANIME STAGE DISPLAY WITH HIGH-RES AVATAR CANVAS -->
                 <div class="relative w-full h-64 bg-gradient-to-b from-purple-950/60 via-slate-950 to-purple-950/40 rounded-xl border border-pink-500/40 overflow-hidden cyber-corner shadow-[0_0_15px_rgba(168,85,247,0.2)] flex flex-col justify-between">
                     
                     <!-- Background Code Grid Effect -->
@@ -248,7 +248,7 @@
                         01100011 01111001 01100101 01100101 01110011
                     </div>
 
-                    <!-- Interactive 2D Anime Avatar Canvas -->
+                    <!-- Interactive Anime Character Canvas -->
                     <canvas id="sukiCanvas" class="w-full h-full block cursor-pointer relative z-10" title="Click avatar to trigger expression!"></canvas>
 
                     <!-- Tactical Orb Floating Badge (Top Left) -->
@@ -273,7 +273,9 @@
                     <!-- META DATA OVERLAY BOX -->
                     <div class="absolute bottom-2 left-2 z-20 w-[64%] hud-card p-1.5 rounded-lg border border-purple-500/50 text-[9px] font-mono leading-tight flex items-center gap-2">
                         <div class="relative flex-none">
-                            <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=Suki" alt="Suki Avatar" class="w-9 h-9 rounded-lg border border-pink-500/80 object-cover shadow-[0_0_8px_rgba(255,42,141,0.5)]" />
+                            <div class="w-9 h-9 rounded-lg border border-pink-500/80 overflow-hidden shadow-[0_0_8px_rgba(255,42,141,0.5)] bg-slate-900 flex items-center justify-center">
+                                <img id="avatar-img-preview" src="" alt="Suki Avatar Preview" class="w-full h-full object-cover object-top" />
+                            </div>
                             <span id="avatar-status-dot" class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-black"></span>
                         </div>
                         <div class="flex-1 min-w-0">
@@ -281,9 +283,9 @@
                                 <span>Meta Data</span>
                                 <span id="emotion-tag" class="text-pink-400 text-[8px]">EXPR: HAPPY</span>
                             </div>
-                            <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">LLM CORE:</span> <span id="active-llm-name">Llama-3.2 (WebGPU / Fallback)</span></div>
-                            <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">VOICE TTS:</span> <span id="voice-name-tag" class="text-cyan-300">WebSpeech Dynamic</span></div>
-                            <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">STATUS:</span> <span id="model-status-text" class="text-emerald-400 font-bold">[Speech Engine Ready]</span></div>
+                            <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">LLM CORE:</span> <span id="active-llm-name">Llama-3.2-1B (WebGPU)</span></div>
+                            <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">VOICE TTS:</span> <span id="voice-name-tag" class="text-cyan-300">WebSpeech Synthesizer</span></div>
+                            <div class="text-purple-300 truncate text-[8px]"><span class="text-slate-400">STATUS:</span> <span id="model-status-text" class="text-emerald-400 font-bold">[Engine Standby]</span></div>
                         </div>
                     </div>
 
@@ -291,7 +293,7 @@
                     <div class="absolute bottom-2 right-2 z-20 flex flex-col items-end gap-1">
                         <div id="commits-badge" class="hud-card px-2 py-0.5 rounded-full text-[8px] font-orbitron text-purple-200 border border-pink-500/50 flex items-center gap-1 shadow-[0_0_8px_rgba(255,42,141,0.3)]">
                             <i class="fa-solid fa-clock-rotate-left text-pink-400 text-[8px]"></i>
-                            <span>14 Commits</span>
+                            <span>15 Commits</span>
                         </div>
                         <div class="flex gap-1">
                             <button id="btn-expr-happy" class="px-1.5 py-0.5 bg-pink-950/80 hover:bg-pink-800 border border-pink-500/50 rounded text-[7px] text-pink-300 font-mono">Happy</button>
@@ -304,11 +306,15 @@
                 <!-- WebLLM Model Loading Progress Bar -->
                 <div id="llm-loader-container" class="hud-card p-1.5 rounded-lg border border-cyan-500/40 text-[9px] font-mono space-y-1">
                     <div class="flex justify-between items-center text-cyan-300">
-                        <span id="llm-load-label"><i class="fa-solid fa-brain text-pink-400 mr-1"></i>WebLLM Status: Initializing local AI engine...</span>
+                        <span id="llm-load-label"><i class="fa-solid fa-brain text-pink-400 mr-1"></i>WebLLM: Ready to initialize Llama-3.2-1B...</span>
                         <span id="llm-load-percent" class="font-bold text-pink-400">0%</span>
                     </div>
-                    <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden border border-purple-800">
+                    <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden border border-purple-800 flex items-center">
                         <div id="llm-progress-bar" class="bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 h-full w-0 transition-all duration-300"></div>
+                    </div>
+                    <div class="flex justify-between items-center pt-0.5">
+                        <button id="start-llm-btn" class="px-2 py-0.5 rounded bg-pink-600 hover:bg-pink-500 text-white font-orbitron text-[8px] tracking-wider transition">Load WebGPU AI Engine</button>
+                        <span id="llm-mode-badge" class="text-[7px] text-purple-400">Fallback AI Mode Active</span>
                     </div>
                 </div>
 
@@ -329,7 +335,7 @@
                     <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-cyan-500/40 hover:border-cyan-400 transition hover:scale-105 active:scale-95" data-cmd="Display core neural model specs and hardware acceleration status.">
                         <i class="fa-solid fa-microchip text-cyan-400 text-[10px]"></i>
                         <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Core:</span>
-                        <span class="font-mono text-[7px] text-cyan-300">Llama-1B</span>
+                        <span class="font-mono text-[7px] text-cyan-300">Llama-3.2</span>
                     </button>
 
                     <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-pink-500/40 hover:border-pink-400 transition hover:scale-105 active:scale-95" data-cmd="Switch to Tactical Kitsune combat mode and scan defense protocols.">
@@ -354,11 +360,11 @@
                     <!-- INITIAL HUD SUKI MESSAGE -->
                     <div class="hud-card p-2 rounded-lg border border-pink-500/40 bg-purple-950/40">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="font-orbitron font-bold text-[10px] text-pink-400 tracking-wider">Kitty Cat Ears (Suki)</span>
-                            <span class="text-[8px] font-mono text-purple-300/70">HUD // VOICE ACTIVE</span>
+                            <span class="font-orbitron font-bold text-[10px] text-pink-400 tracking-wider">Tactical Kitsune (Suki)</span>
+                            <span class="text-[8px] font-mono text-purple-300/70">HUD // ONLINE</span>
                         </div>
                         <p class="text-[11px] font-mono text-purple-100 leading-snug">
-                            <strong class="text-pink-400 font-orbitron">SUKI NEON VIOLET //</strong> Nya! Systems online, Senpai! My animated avatar, dynamic lip-sync, and WebSpeech audio synthesis are fully synchronized! Try typing or tapping the mic button below to talk to me!
+                            <strong class="text-pink-400 font-orbitron">SUKI NEON VIOLET //</strong> Nya! Systems operational, Senpai! My high-res cyber anime avatar, glowing highlights, lip-sync engine, and speech synthesis are online! Type or tap the mic button to converse!
                         </p>
                         <div class="flex justify-end mt-1.5">
                             <button class="transmit-msg-btn px-2 py-0.5 rounded bg-purple-900/80 hover:bg-pink-600 text-pink-300 hover:text-white border border-pink-500/40 text-[9px] font-orbitron flex items-center gap-1 transition">
@@ -374,7 +380,7 @@
                     <button id="mic-btn" class="w-9 h-9 rounded-lg bg-purple-900/60 border border-pink-500/60 text-pink-400 hover:text-white flex items-center justify-center text-sm transition flex-none" title="Hold/Click to Talk (Web Speech ASR)">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
-                    <input id="chat-input" type="text" placeholder="Type a message or command for Suki..." class="flex-1 bg-purple-950/40 border border-purple-800/60 rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-pink-500 transition">
+                    <input id="chat-input" type="text" placeholder="Type a command or message for Suki..." class="flex-1 bg-purple-950/40 border border-purple-800/60 rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-pink-500 transition">
                     <button id="send-btn" class="w-9 h-9 rounded-lg bg-pink-600 hover:bg-pink-500 border border-pink-400 text-white flex items-center justify-center text-sm transition flex-none">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
@@ -449,7 +455,7 @@
                 </div>
 
                 <div class="pt-2 border-t border-purple-900/60 flex justify-between items-center">
-                    <span class="text-slate-300">Avatar Eye Glow Pulsing:</span>
+                    <span class="text-slate-300">Avatar Cyber Glow & Effects:</span>
                     <input id="eye-glow-toggle" type="checkbox" checked class="accent-pink-500 w-4 h-4">
                 </div>
             </div>
@@ -465,19 +471,33 @@
     <!-- JAVASCRIPT ENGINE & AVATAR CONTROLLER -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // HIGH RESOLUTION AVATAR IMAGE DATA BASE64
+            const SUKI_AVATAR_IMAGE_SRC = "image.png";
+
             // STATE ENGINE
             const state = {
-                expression: 'happy', // 'happy', 'surprised', 'blush'
+                expression: 'happy', // 'happy', 'surprised', 'blush', 'tactical'
                 isSpeaking: false,
                 isListening: false,
                 audioMuted: false,
                 eyeGlow: true,
-                mouthOpenRatio: 0,
                 pitch: 1.2,
                 rate: 1.0,
                 volume: 1.0,
                 selectedVoice: null,
-                webllmEngine: null
+                webllmEngine: null,
+                isEngineLoading: false,
+                isEngineReady: false
+            };
+
+            // LOAD AVATAR IMAGE
+            const avatarImg = new Image();
+            avatarImg.src = SUKI_AVATAR_IMAGE_SRC;
+            let avatarLoaded = false;
+            avatarImg.onload = () => {
+                avatarLoaded = true;
+                const previewImg = document.getElementById('avatar-img-preview');
+                if (previewImg) previewImg.src = SUKI_AVATAR_IMAGE_SRC;
             };
 
             // CLOCK & STATUS BAR UPDATER
@@ -495,6 +515,7 @@
             const ctx = canvas.getContext('2d');
 
             function resizeCanvas() {
+                if (!canvas.parentElement) return;
                 canvas.width = canvas.parentElement.clientWidth;
                 canvas.height = canvas.parentElement.clientHeight;
             }
@@ -502,153 +523,126 @@
             resizeCanvas();
 
             let animFrameId;
-            let blinkTimer = 0;
-            let isBlinking = false;
 
             function renderAvatar(timestamp) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2 + 10;
-                
-                // Idle Float
-                const floatOffset = Math.sin(timestamp / 400) * 4;
+                const width = canvas.width;
+                const height = canvas.height;
 
-                // Cyber Kitsune Ears
-                ctx.fillStyle = '#1e1135';
-                ctx.strokeStyle = '#ff2a8d';
-                ctx.lineWidth = 2;
-                
-                // Left Ear
-                ctx.beginPath();
-                ctx.moveTo(centerX - 45, centerY - 45 + floatOffset);
-                ctx.lineTo(centerX - 85, centerY - 115 + floatOffset);
-                ctx.lineTo(centerX - 15, centerY - 65 + floatOffset);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
+                // Breathing/Idle Float Offset
+                const floatY = Math.sin(timestamp / 400) * 5;
+                const breathScale = 1 + Math.sin(timestamp / 800) * 0.01;
 
-                // Inner Left Ear Glow
-                ctx.fillStyle = '#ff2a8d';
-                ctx.beginPath();
-                ctx.moveTo(centerX - 45, centerY - 52 + floatOffset);
-                ctx.lineTo(centerX - 75, centerY - 102 + floatOffset);
-                ctx.lineTo(centerX - 25, centerY - 65 + floatOffset);
-                ctx.closePath();
-                ctx.fill();
+                if (avatarLoaded) {
+                    ctx.save();
+                    
+                    // Draw centered, scaled character image inside canvas
+                    const aspect = avatarImg.width / avatarImg.height;
+                    let drawHeight = height * 1.35;
+                    let drawWidth = drawHeight * aspect;
+                    let drawX = (width - drawWidth) / 2;
+                    let drawY = (height - drawHeight) / 2 + 35 + floatY;
 
-                // Right Ear
-                ctx.fillStyle = '#1e1135';
-                ctx.beginPath();
-                ctx.moveTo(centerX + 45, centerY - 45 + floatOffset);
-                ctx.lineTo(centerX + 85, centerY - 115 + floatOffset);
-                ctx.lineTo(centerX + 15, centerY - 65 + floatOffset);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
+                    // Apply slight breathing scale from center base
+                    ctx.translate(width / 2, height);
+                    ctx.scale(breathScale, breathScale);
+                    ctx.translate(-width / 2, -height);
 
-                // Inner Right Ear Glow
-                ctx.fillStyle = '#ff2a8d';
-                ctx.beginPath();
-                ctx.moveTo(centerX + 45, centerY - 52 + floatOffset);
-                ctx.lineTo(centerX + 75, centerY - 102 + floatOffset);
-                ctx.lineTo(centerX + 25, centerY - 65 + floatOffset);
-                ctx.closePath();
-                ctx.fill();
+                    // Render Base Character Image
+                    ctx.drawImage(avatarImg, drawX, drawY, drawWidth, drawHeight);
 
-                // Face Contour
-                ctx.fillStyle = '#100926';
-                ctx.strokeStyle = '#00f0ff';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(centerX, centerY + floatOffset, 65, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
+                    // CYBER GLOW OVERLAYS & REACTIVE CANVAS EFFECTS
+                    if (state.eyeGlow) {
+                        const eyePulse = (Math.sin(timestamp / 250) + 1) / 2;
+                        
+                        // Cyber Ear Pulse Glow Coordinates (Adjusted relative to drawn canvas head)
+                        const earLeftX = drawX + drawWidth * 0.40;
+                        const earLeftY = drawY + drawHeight * 0.07;
+                        const earRightX = drawX + drawWidth * 0.62;
+                        const earRightY = drawY + drawHeight * 0.07;
 
-                // Hair / Bangs Overlay
-                ctx.fillStyle = '#2a164d';
-                ctx.beginPath();
-                ctx.arc(centerX, centerY - 15 + floatOffset, 65, Math.PI, Math.PI * 2);
-                ctx.fill();
+                        ctx.shadowColor = '#bf5af2';
+                        ctx.shadowBlur = 12 + eyePulse * 8;
+                        ctx.fillStyle = `rgba(191, 90, 242, ${0.4 + eyePulse * 0.4})`;
 
-                // Blink timing logic
-                if (timestamp > blinkTimer) {
-                    isBlinking = true;
-                    if (timestamp > blinkTimer + 150) {
-                        isBlinking = false;
-                        blinkTimer = timestamp + Math.random() * 4000 + 2000;
+                        ctx.beginPath();
+                        ctx.arc(earLeftX, earLeftY, 7, 0, Math.PI * 2);
+                        ctx.arc(earRightX, earRightY, 7, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Glowing Cyber Eyes Overlay
+                        const eyeY = drawY + drawHeight * 0.16;
+                        const eyeL = drawX + drawWidth * 0.44;
+                        const eyeR = drawX + drawWidth * 0.57;
+
+                        ctx.shadowColor = state.expression === 'tactical' ? '#00f0ff' : '#a855f7';
+                        ctx.shadowBlur = 8 + eyePulse * 6;
+                        ctx.fillStyle = state.expression === 'tactical' ? `rgba(0, 240, 255, ${0.35 + eyePulse * 0.3})` : `rgba(168, 85, 247, ${0.3 + eyePulse * 0.3})`;
+                        
+                        ctx.beginPath();
+                        ctx.arc(eyeL, eyeY, 5, 0, Math.PI * 2);
+                        ctx.arc(eyeR, eyeY, 5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
                     }
-                }
 
-                // Eyes Rendering
-                const eyeY = centerY - 10 + floatOffset;
-                const eyeGlowRadius = state.eyeGlow ? Math.sin(timestamp / 200) * 2 + 10 : 9;
+                    // EXPRESSION OVERLAYS
+                    const eyeCenterY = drawY + drawHeight * 0.16;
+                    const mouthY = drawY + drawHeight * 0.22;
+                    const mouthX = drawX + drawWidth * 0.505;
 
-                if (isBlinking) {
-                    ctx.strokeStyle = '#00f0ff';
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.moveTo(centerX - 35, eyeY);
-                    ctx.lineTo(centerX - 15, eyeY);
-                    ctx.moveTo(centerX + 15, eyeY);
-                    ctx.lineTo(centerX + 35, eyeY);
-                    ctx.stroke();
-                } else if (state.expression === 'happy') {
-                    // Curved Happy Eyes
-                    ctx.strokeStyle = '#00f0ff';
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.arc(centerX - 25, eyeY, 10, Math.PI, 0);
-                    ctx.arc(centerX + 25, eyeY, 10, Math.PI, 0);
-                    ctx.stroke();
+                    if (state.expression === 'blush') {
+                        // Cheek Blush Highlights
+                        ctx.fillStyle = 'rgba(255, 42, 141, 0.45)';
+                        ctx.beginPath();
+                        ctx.ellipse(drawX + drawWidth * 0.42, eyeCenterY + 14, 10, 5, -0.1, 0, Math.PI * 2);
+                        ctx.ellipse(drawX + drawWidth * 0.59, eyeCenterY + 14, 10, 5, 0.1, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (state.expression === 'surprised') {
+                        // Wide Cyber Ring Highlights around eyes
+                        ctx.strokeStyle = '#00f0ff';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.arc(drawX + drawWidth * 0.44, eyeCenterY, 8, 0, Math.PI * 2);
+                        ctx.arc(drawX + drawWidth * 0.57, eyeCenterY, 8, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else if (state.expression === 'tactical') {
+                        // HUD Targeting reticle overlay on face
+                        ctx.strokeStyle = '#00f0ff';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.arc(drawX + drawWidth * 0.57, eyeCenterY, 12, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.fillStyle = '#00f0ff';
+                        ctx.fillRect(drawX + drawWidth * 0.57 - 2, eyeCenterY - 2, 4, 4);
+                    }
+
+                    // DYNAMIC LIP-SYNC MOUTH OVERLAY
+                    if (state.isSpeaking) {
+                        const mouthOpen = Math.abs(Math.sin(timestamp / 70)) * 8 + 3;
+                        ctx.fillStyle = '#10061e';
+                        ctx.strokeStyle = '#ff2a8d';
+                        ctx.lineWidth = 1.5;
+
+                        ctx.beginPath();
+                        ctx.ellipse(mouthX, mouthY, 5, mouthOpen / 2, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        // Inner tongue accent
+                        ctx.fillStyle = '#ff2a8d';
+                        ctx.beginPath();
+                        ctx.ellipse(mouthX, mouthY + mouthOpen * 0.2, 3, mouthOpen * 0.25, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    ctx.restore();
                 } else {
-                    // Glowing Cyber Eyes
-                    ctx.fillStyle = '#00f0ff';
-                    ctx.shadowColor = '#00f0ff';
-                    ctx.shadowBlur = eyeGlowRadius;
-
-                    ctx.beginPath();
-                    ctx.arc(centerX - 25, eyeY, state.expression === 'surprised' ? 12 : 9, 0, Math.PI * 2);
-                    ctx.arc(centerX + 25, eyeY, state.expression === 'surprised' ? 12 : 9, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Inner Pupil
-                    ctx.shadowBlur = 0;
-                    ctx.fillStyle = '#ffffff';
-                    ctx.beginPath();
-                    ctx.arc(centerX - 27, eyeY - 2, 3, 0, Math.PI * 2);
-                    ctx.arc(centerX + 23, eyeY - 2, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                // Blush Marks
-                if (state.expression === 'blush' || state.expression === 'happy') {
-                    ctx.fillStyle = 'rgba(255, 42, 141, 0.4)';
-                    ctx.beginPath();
-                    ctx.ellipse(centerX - 30, eyeY + 18, 8, 4, 0, 0, Math.PI * 2);
-                    ctx.ellipse(centerX + 30, eyeY + 18, 8, 4, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                // Mouth Rendering with Lip-Sync
-                const mouthY = centerY + 25 + floatOffset;
-                ctx.strokeStyle = '#ff2a8d';
-                ctx.fillStyle = '#ff2a8d';
-                ctx.lineWidth = 2;
-
-                if (state.isSpeaking) {
-                    // Dynamic Lip Sync mouth opening
-                    const openHeight = Math.abs(Math.sin(timestamp / 80)) * 14 + 4;
-                    ctx.beginPath();
-                    ctx.ellipse(centerX, mouthY, 10, openHeight / 2, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (state.expression === 'surprised') {
-                    ctx.beginPath();
-                    ctx.arc(centerX, mouthY, 7, 0, Math.PI * 2);
-                    ctx.stroke();
-                } else {
-                    ctx.beginPath();
-                    ctx.arc(centerX, mouthY - 3, 8, 0.2 * Math.PI, 0.8 * Math.PI);
-                    ctx.stroke();
+                    // Fallback visual loader until image mounts
+                    ctx.fillStyle = '#ff2a8d';
+                    ctx.font = '12px Share Tech Mono';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('LOADING TACTICAL AVATAR...', width / 2, height / 2);
                 }
 
                 animFrameId = requestAnimationFrame(renderAvatar);
@@ -656,7 +650,7 @@
             animFrameId = requestAnimationFrame(renderAvatar);
 
             canvas.addEventListener('click', () => {
-                const exprs = ['happy', 'surprised', 'blush'];
+                const exprs = ['happy', 'surprised', 'blush', 'tactical'];
                 state.expression = exprs[(exprs.indexOf(state.expression) + 1) % exprs.length];
                 document.getElementById('emotion-tag').textContent = `EXPR: ${state.expression.toUpperCase()}`;
             });
@@ -689,7 +683,10 @@
                 if (!synth || state.audioMuted) return;
                 synth.cancel();
 
-                const utterance = new SpeechSynthesisUtterance(text);
+                // Clean emojis and hud formatting symbols before speaking
+                const cleanText = text.replace(/[*_~`]/g, '').replace(/\[.*?\]/g, '');
+
+                const utterance = new SpeechSynthesisUtterance(cleanText);
                 const voices = synth.getVoices();
                 if (voices[voiceSelect.value]) {
                     utterance.voice = voices[voiceSelect.value];
@@ -725,7 +722,7 @@
                         <span class="font-orbitron font-bold text-[10px] ${isUser ? 'text-cyan-300' : 'text-pink-400'} tracking-wider">${sender}</span>
                         <span class="text-[8px] font-mono text-purple-300/70">HUD // LIVE</span>
                     </div>
-                    <p class="text-[11px] font-mono text-purple-100 leading-snug">${text}</p>
+                    <p class="msg-content text-[11px] font-mono text-purple-100 leading-snug">${text}</p>
                 `;
 
                 if (!isUser) {
@@ -742,31 +739,93 @@
 
                 chatContainer.appendChild(msgDiv);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
+                return msgDiv;
             }
 
-            // SEND USER MESSAGE & RESPONSE SIMULATION
+            // FALLBACK DYNAMIC CYBERPUNK RULES ENGINE
+            function getFallbackResponse(userInput) {
+                const query = userInput.toLowerCase();
+                if (query.includes('asr') || query.includes('mic') || query.includes('speech')) {
+                    return "Nya! Voice Speech Recognition (ASR) is active and synchronized with my viseme lip-sync matrix!";
+                } else if (query.includes('orb') || query.includes('mana') || query.includes('energy')) {
+                    return "Tactical Energy Orb diagnostic complete! Kitsune cyber mana is stable at 100%.";
+                } else if (query.includes('core') || query.includes('model') || query.includes('specs')) {
+                    return state.isEngineReady ? "WebGPU WebLLM Engine active running Llama-3.2-1B-Instruct!" : "Local Fallback AI Core online. WebGPU hardware engine ready on demand!";
+                } else if (query.includes('tactics') || query.includes('combat') || query.includes('shield')) {
+                    state.expression = 'tactical';
+                    document.getElementById('emotion-tag').textContent = 'EXPR: TACTICAL';
+                    return "Tactical Kitsune stance activated! Scanning sector defense subroutines... Sector clear, Senpai!";
+                } else if (query.includes('matrix') || query.includes('scan') || query.includes('network')) {
+                    return "Executing telemetry matrix scan... All cyberpunk subnets reporting optimal packet flow!";
+                } else if (query.includes('link') || query.includes('uplink') || query.includes('connect')) {
+                    return "Full voice and neural data stream uplink established with user! Ready for command.";
+                } else if (query.includes('hello') || query.includes('hi') || query.includes('hey')) {
+                    state.expression = 'happy';
+                    document.getElementById('emotion-tag').textContent = 'EXPR: HAPPY';
+                    return "Konnichiwa Senpai! Suki core initialized. What cyber directive shall we execute today?";
+                } else {
+                    const replies = [
+                        `Nya! Processing your request: "${userInput}". All cyber subroutines operational!`,
+                        `Affirmative, Senpai! Tactical protocols aligned. Suki is ready for your next directive!`,
+                        `Kawaii override active! Suki core is executing your query with 100% mana efficiency!`,
+                        `Telemetry logged for "${userInput}". Neural systems performing optimally on local web pipeline!`
+                    ];
+                    return replies[Math.floor(Math.random() * replies.length)];
+                }
+            }
+
+            // SEND USER MESSAGE & RESPONSE DISPATCH
             const chatInput = document.getElementById('chat-input');
             const sendBtn = document.getElementById('send-btn');
 
-            function handleUserSend() {
+            async function handleUserSend() {
                 const text = chatInput.value.trim();
                 if (!text) return;
 
                 appendMessage('Senpai', text, true);
                 chatInput.value = '';
 
-                // AI Response Dispatch
-                setTimeout(() => {
-                    const replies = [
-                        `Nya! Processing your request: "${text}". Neural tactical link operational!`,
-                        `Affirmative, Senpai! All cyberpunk subroutines aligned. Ready for next command!`,
-                        `Kawaii override activated! Suki core is executing your request with 100% mana efficiency!`,
-                        `Telemetry updated for "${text}". Systems running optimal on local web pipeline!`
-                    ];
-                    const reply = replies[Math.floor(Math.random() * replies.length)];
-                    appendMessage('Kitty Cat Ears (Suki)', reply, false);
-                    speakText(reply);
-                }, 600);
+                if (state.webllmEngine && state.isEngineReady) {
+                    // WEBLLM REAL-TIME STREAMING RESPONSE
+                    const sukiMsgElem = appendMessage('Tactical Kitsune (Suki)', 'Thinking...', false);
+                    const pElem = sukiMsgElem.querySelector('.msg-content');
+                    pElem.textContent = '';
+                    let fullText = '';
+
+                    try {
+                        const messages = [
+                            { role: "system", content: "You are Suki, a cute, tactical cyberpunk anime catgirl AI assistant. Keep responses concise, playful, helpful, and under 3 sentences with cyber anime style (Nya, Senpai)." },
+                            { role: "user", content: text }
+                        ];
+
+                        const completion = await state.webllmEngine.chat.completions.create({
+                            messages,
+                            stream: true
+                        });
+
+                        for await (const chunk of completion) {
+                            const curText = chunk.choices[0]?.delta?.content || "";
+                            fullText += curText;
+                            pElem.textContent = fullText;
+                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                        }
+
+                        if (!fullText) fullText = "Nya! Core stream completed!";
+                        speakText(fullText);
+                    } catch (err) {
+                        console.warn('WebLLM Stream Error, using fallback engine:', err);
+                        const fallbackText = getFallbackResponse(text);
+                        pElem.textContent = fallbackText;
+                        speakText(fallbackText);
+                    }
+                } else {
+                    // DYNAMIC FALLBACK RESPONSE
+                    setTimeout(() => {
+                        const reply = getFallbackResponse(text);
+                        appendMessage('Tactical Kitsune (Suki)', reply, false);
+                        speakText(reply);
+                    }, 400);
+                }
             }
 
             sendBtn.addEventListener('click', handleUserSend);
@@ -808,7 +867,9 @@
                 });
             } else {
                 micBtn.addEventListener('click', () => {
-                    alert('Web Speech Recognition API is not supported in this browser viewport.');
+                    const errorMsg = 'Speech Recognition (ASR) not available on this browser engine.';
+                    appendMessage('System Log', errorMsg, false);
+                    speakText(errorMsg);
                 });
             }
 
@@ -837,8 +898,10 @@
 
             // DOCK ACTIONS
             document.getElementById('dock-greet').addEventListener('click', () => {
-                const msg = "Konnichiwa, Senpai! Suki is fully booted and ready!";
-                appendMessage('Kitty Cat Ears (Suki)', msg, false);
+                state.expression = 'happy';
+                document.getElementById('emotion-tag').textContent = 'EXPR: HAPPY';
+                const msg = "Konnichiwa, Senpai! Suki is online and ready for battle!";
+                appendMessage('Tactical Kitsune (Suki)', msg, false);
                 speakText(msg);
             });
             document.getElementById('dock-happy').addEventListener('click', () => {
@@ -846,8 +909,10 @@
                 document.getElementById('emotion-tag').textContent = 'EXPR: HAPPY';
             });
             document.getElementById('dock-tactical').addEventListener('click', () => {
-                const msg = "Tactical scanning active. Kitsune radar operational.";
-                appendMessage('Kitty Cat Ears (Suki)', msg, false);
+                state.expression = 'tactical';
+                document.getElementById('emotion-tag').textContent = 'EXPR: TACTICAL';
+                const msg = "Tactical scanning active. Kitsune defense radar operational.";
+                appendMessage('Tactical Kitsune (Suki)', msg, false);
                 speakText(msg);
             });
             document.getElementById('dock-blush').addEventListener('click', () => {
@@ -895,26 +960,75 @@
                 audioIcon.className = state.audioMuted ? 'fa-solid fa-volume-xmark text-slate-500' : 'fa-solid fa-volume-high text-pink-400';
             });
 
-            // WEBLLM ENGINE INITIALIZATION (FALLBACK READY)
-            window.addEventListener('mlc-loaded', async () => {
-                const loader = document.getElementById('llm-loader-container');
-                const progress = document.getElementById('llm-progress-bar');
-                const percentText = document.getElementById('llm-load-percent');
-                const labelText = document.getElementById('llm-load-label');
+            // WEBLLM ENGINE INITIALIZATION & LOAD HANDLER
+            const startLlmBtn = document.getElementById('start-llm-btn');
+            const progressBar = document.getElementById('llm-progress-bar');
+            const percentText = document.getElementById('llm-load-percent');
+            const labelText = document.getElementById('llm-load-label');
+            const modeBadge = document.getElementById('llm-mode-badge');
+            const modelStatusText = document.getElementById('model-status-text');
 
-                if (window.CreateMLCEngine) {
-                    try {
-                        labelText.innerHTML = `<i class="fa-solid fa-brain text-pink-400 mr-1"></i>WebLLM: Engine Initialized!`;
-                        progress.style.width = '100%';
-                        percentText.textContent = '100%';
-                        setTimeout(() => loader.classList.add('hidden'), 2000);
-                    } catch (err) {
-                        labelText.textContent = 'WebLLM: Operating in standard fallback mode.';
-                    }
+            async function initWebLLMEngine() {
+                if (state.isEngineLoading || state.isEngineReady) return;
+
+                if (!navigator.gpu) {
+                    labelText.innerHTML = `<i class="fa-solid fa-circle-exclamation text-pink-400 mr-1"></i>WebGPU unsupported. Operating in Fallback AI mode.`;
+                    modeBadge.textContent = 'Fallback AI Active';
+                    return;
                 }
-            });
 
-            // Initial speak event listener trigger on first transmit button
+                if (!window.webLLM || !window.webLLM.CreateMLCEngine) {
+                    labelText.textContent = 'WebLLM SDK loading... Please retry momentarily.';
+                    return;
+                }
+
+                state.isEngineLoading = true;
+                startLlmBtn.disabled = true;
+                startLlmBtn.classList.add('opacity-50');
+                labelText.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-cyan-400 mr-1"></i>Initializing WebGPU LLM Core...`;
+
+                const selectedModel = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+
+                try {
+                    const engine = await window.webLLM.CreateMLCEngine(
+                        selectedModel,
+                        {
+                            initProgressCallback: (report) => {
+                                const progress = Math.round((report.progress || 0) * 100);
+                                progressBar.style.width = `${progress}%`;
+                                percentText.textContent = `${progress}%`;
+                                labelText.textContent = report.text || 'Loading weights...';
+                            }
+                        }
+                    );
+
+                    state.webllmEngine = engine;
+                    state.isEngineReady = true;
+                    state.isEngineLoading = false;
+
+                    labelText.innerHTML = `<i class="fa-solid fa-check text-emerald-400 mr-1"></i>Llama-3.2-1B Engine Ready!`;
+                    modeBadge.textContent = 'WebGPU Acceleration Active';
+                    modeBadge.className = 'text-[7px] text-emerald-400 font-bold';
+                    modelStatusText.textContent = '[WebGPU Local Model Ready]';
+                    document.getElementById('active-llm-name').textContent = 'Llama-3.2-1B (WebGPU)';
+
+                    setTimeout(() => {
+                        document.getElementById('llm-loader-container').classList.add('hidden');
+                    }, 2500);
+
+                } catch (error) {
+                    console.error('WebLLM Engine failed to initialize:', error);
+                    state.isEngineLoading = false;
+                    startLlmBtn.disabled = false;
+                    startLlmBtn.classList.remove('opacity-50');
+                    labelText.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-pink-400 mr-1"></i>GPU memory fallback engaged.`;
+                    modeBadge.textContent = 'Fallback AI Active';
+                }
+            }
+
+            startLlmBtn.addEventListener('click', initWebLLMEngine);
+
+            // Trigger initial speech listener hook
             document.querySelectorAll('.transmit-msg-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const text = btn.closest('.hud-card').querySelector('p').textContent;
