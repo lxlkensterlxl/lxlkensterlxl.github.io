@@ -465,6 +465,463 @@
     <!-- JAVASCRIPT ENGINE & AVATAR CONTROLLER -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // ==========================================
-            // SYSTEM STATE & GLOBAL VARIABLES
-            // =================================
+            // STATE ENGINE
+            const state = {
+                expression: 'happy', // 'happy', 'surprised', 'blush'
+                isSpeaking: false,
+                isListening: false,
+                audioMuted: false,
+                eyeGlow: true,
+                mouthOpenRatio: 0,
+                pitch: 1.2,
+                rate: 1.0,
+                volume: 1.0,
+                selectedVoice: null,
+                webllmEngine: null
+            };
+
+            // CLOCK & STATUS BAR UPDATER
+            function updateClock() {
+                const now = new Date();
+                const hrs = String(now.getHours()).padStart(2, '0');
+                const mins = String(now.getMinutes()).padStart(2, '0');
+                document.getElementById('clock-display').textContent = `${hrs}:${mins}`;
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // 2D CANVAS AVATAR RENDERER
+            const canvas = document.getElementById('sukiCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function resizeCanvas() {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            let animFrameId;
+            let blinkTimer = 0;
+            let isBlinking = false;
+
+            function renderAvatar(timestamp) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2 + 10;
+                
+                // Idle Float
+                const floatOffset = Math.sin(timestamp / 400) * 4;
+
+                // Cyber Kitsune Ears
+                ctx.fillStyle = '#1e1135';
+                ctx.strokeStyle = '#ff2a8d';
+                ctx.lineWidth = 2;
+                
+                // Left Ear
+                ctx.beginPath();
+                ctx.moveTo(centerX - 45, centerY - 45 + floatOffset);
+                ctx.lineTo(centerX - 85, centerY - 115 + floatOffset);
+                ctx.lineTo(centerX - 15, centerY - 65 + floatOffset);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Inner Left Ear Glow
+                ctx.fillStyle = '#ff2a8d';
+                ctx.beginPath();
+                ctx.moveTo(centerX - 45, centerY - 52 + floatOffset);
+                ctx.lineTo(centerX - 75, centerY - 102 + floatOffset);
+                ctx.lineTo(centerX - 25, centerY - 65 + floatOffset);
+                ctx.closePath();
+                ctx.fill();
+
+                // Right Ear
+                ctx.fillStyle = '#1e1135';
+                ctx.beginPath();
+                ctx.moveTo(centerX + 45, centerY - 45 + floatOffset);
+                ctx.lineTo(centerX + 85, centerY - 115 + floatOffset);
+                ctx.lineTo(centerX + 15, centerY - 65 + floatOffset);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Inner Right Ear Glow
+                ctx.fillStyle = '#ff2a8d';
+                ctx.beginPath();
+                ctx.moveTo(centerX + 45, centerY - 52 + floatOffset);
+                ctx.lineTo(centerX + 75, centerY - 102 + floatOffset);
+                ctx.lineTo(centerX + 25, centerY - 65 + floatOffset);
+                ctx.closePath();
+                ctx.fill();
+
+                // Face Contour
+                ctx.fillStyle = '#100926';
+                ctx.strokeStyle = '#00f0ff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY + floatOffset, 65, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Hair / Bangs Overlay
+                ctx.fillStyle = '#2a164d';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY - 15 + floatOffset, 65, Math.PI, Math.PI * 2);
+                ctx.fill();
+
+                // Blink timing logic
+                if (timestamp > blinkTimer) {
+                    isBlinking = true;
+                    if (timestamp > blinkTimer + 150) {
+                        isBlinking = false;
+                        blinkTimer = timestamp + Math.random() * 4000 + 2000;
+                    }
+                }
+
+                // Eyes Rendering
+                const eyeY = centerY - 10 + floatOffset;
+                const eyeGlowRadius = state.eyeGlow ? Math.sin(timestamp / 200) * 2 + 10 : 9;
+
+                if (isBlinking) {
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX - 35, eyeY);
+                    ctx.lineTo(centerX - 15, eyeY);
+                    ctx.moveTo(centerX + 15, eyeY);
+                    ctx.lineTo(centerX + 35, eyeY);
+                    ctx.stroke();
+                } else if (state.expression === 'happy') {
+                    // Curved Happy Eyes
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(centerX - 25, eyeY, 10, Math.PI, 0);
+                    ctx.arc(centerX + 25, eyeY, 10, Math.PI, 0);
+                    ctx.stroke();
+                } else {
+                    // Glowing Cyber Eyes
+                    ctx.fillStyle = '#00f0ff';
+                    ctx.shadowColor = '#00f0ff';
+                    ctx.shadowBlur = eyeGlowRadius;
+
+                    ctx.beginPath();
+                    ctx.arc(centerX - 25, eyeY, state.expression === 'surprised' ? 12 : 9, 0, Math.PI * 2);
+                    ctx.arc(centerX + 25, eyeY, state.expression === 'surprised' ? 12 : 9, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Inner Pupil
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(centerX - 27, eyeY - 2, 3, 0, Math.PI * 2);
+                    ctx.arc(centerX + 23, eyeY - 2, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Blush Marks
+                if (state.expression === 'blush' || state.expression === 'happy') {
+                    ctx.fillStyle = 'rgba(255, 42, 141, 0.4)';
+                    ctx.beginPath();
+                    ctx.ellipse(centerX - 30, eyeY + 18, 8, 4, 0, 0, Math.PI * 2);
+                    ctx.ellipse(centerX + 30, eyeY + 18, 8, 4, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Mouth Rendering with Lip-Sync
+                const mouthY = centerY + 25 + floatOffset;
+                ctx.strokeStyle = '#ff2a8d';
+                ctx.fillStyle = '#ff2a8d';
+                ctx.lineWidth = 2;
+
+                if (state.isSpeaking) {
+                    // Dynamic Lip Sync mouth opening
+                    const openHeight = Math.abs(Math.sin(timestamp / 80)) * 14 + 4;
+                    ctx.beginPath();
+                    ctx.ellipse(centerX, mouthY, 10, openHeight / 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (state.expression === 'surprised') {
+                    ctx.beginPath();
+                    ctx.arc(centerX, mouthY, 7, 0, Math.PI * 2);
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(centerX, mouthY - 3, 8, 0.2 * Math.PI, 0.8 * Math.PI);
+                    ctx.stroke();
+                }
+
+                animFrameId = requestAnimationFrame(renderAvatar);
+            }
+            animFrameId = requestAnimationFrame(renderAvatar);
+
+            canvas.addEventListener('click', () => {
+                const exprs = ['happy', 'surprised', 'blush'];
+                state.expression = exprs[(exprs.indexOf(state.expression) + 1) % exprs.length];
+                document.getElementById('emotion-tag').textContent = `EXPR: ${state.expression.toUpperCase()}`;
+            });
+
+            // WEBSPEECH SYNTHESIS ENGINE (TTS)
+            const synth = window.speechSynthesis;
+            const voiceSelect = document.getElementById('voice-select');
+
+            function populateVoices() {
+                if (!synth) return;
+                const voices = synth.getVoices();
+                voiceSelect.innerHTML = '';
+                voices.forEach((v, idx) => {
+                    const opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.textContent = `${v.name} (${v.lang})`;
+                    if (v.default || v.name.includes('Google') || v.name.includes('Samantha') || v.name.includes('Zira')) {
+                        opt.selected = true;
+                        state.selectedVoice = v;
+                    }
+                    voiceSelect.appendChild(opt);
+                });
+            }
+            populateVoices();
+            if (synth && synth.onvoiceschanged !== undefined) {
+                synth.onvoiceschanged = populateVoices;
+            }
+
+            function speakText(text) {
+                if (!synth || state.audioMuted) return;
+                synth.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                const voices = synth.getVoices();
+                if (voices[voiceSelect.value]) {
+                    utterance.voice = voices[voiceSelect.value];
+                }
+                utterance.pitch = state.pitch;
+                utterance.rate = state.rate;
+                utterance.volume = state.volume;
+
+                utterance.onstart = () => {
+                    state.isSpeaking = true;
+                    document.getElementById('speech-state-badge').textContent = 'TALKING';
+                    document.getElementById('equalizer').classList.add('speaking-active');
+                };
+
+                utterance.onend = utterance.onerror = () => {
+                    state.isSpeaking = false;
+                    document.getElementById('speech-state-badge').textContent = 'IDLE';
+                    document.getElementById('equalizer').classList.remove('speaking-active');
+                };
+
+                synth.speak(utterance);
+            }
+
+            // CHAT LOG GENERATOR
+            const chatContainer = document.getElementById('chat-container');
+
+            function appendMessage(sender, text, isUser = false) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `hud-card p-2 rounded-lg border ${isUser ? 'border-cyan-500/40 bg-cyan-950/20 text-right' : 'border-pink-500/40 bg-purple-950/40'}`;
+                
+                msgDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-orbitron font-bold text-[10px] ${isUser ? 'text-cyan-300' : 'text-pink-400'} tracking-wider">${sender}</span>
+                        <span class="text-[8px] font-mono text-purple-300/70">HUD // LIVE</span>
+                    </div>
+                    <p class="text-[11px] font-mono text-purple-100 leading-snug">${text}</p>
+                `;
+
+                if (!isUser) {
+                    const btnContainer = document.createElement('div');
+                    btnContainer.className = 'flex justify-end mt-1.5';
+                    btnContainer.innerHTML = `
+                        <button class="transmit-msg-btn px-2 py-0.5 rounded bg-purple-900/80 hover:bg-pink-600 text-pink-300 hover:text-white border border-pink-500/40 text-[9px] font-orbitron flex items-center gap-1 transition">
+                            <i class="fa-solid fa-bullhorn text-[8px]"></i> Speak Message
+                        </button>
+                    `;
+                    btnContainer.querySelector('.transmit-msg-btn').addEventListener('click', () => speakText(text));
+                    msgDiv.appendChild(btnContainer);
+                }
+
+                chatContainer.appendChild(msgDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            // SEND USER MESSAGE & RESPONSE SIMULATION
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+
+            function handleUserSend() {
+                const text = chatInput.value.trim();
+                if (!text) return;
+
+                appendMessage('Senpai', text, true);
+                chatInput.value = '';
+
+                // AI Response Dispatch
+                setTimeout(() => {
+                    const replies = [
+                        `Nya! Processing your request: "${text}". Neural tactical link operational!`,
+                        `Affirmative, Senpai! All cyberpunk subroutines aligned. Ready for next command!`,
+                        `Kawaii override activated! Suki core is executing your request with 100% mana efficiency!`,
+                        `Telemetry updated for "${text}". Systems running optimal on local web pipeline!`
+                    ];
+                    const reply = replies[Math.floor(Math.random() * replies.length)];
+                    appendMessage('Kitty Cat Ears (Suki)', reply, false);
+                    speakText(reply);
+                }, 600);
+            }
+
+            sendBtn.addEventListener('click', handleUserSend);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleUserSend();
+            });
+
+            // MIC / ASR INPUT HANDLER
+            const micBtn = document.getElementById('mic-btn');
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = () => {
+                    state.isListening = true;
+                    micBtn.classList.add('mic-listening');
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    chatInput.value = transcript;
+                    handleUserSend();
+                };
+
+                recognition.onend = recognition.onerror = () => {
+                    state.isListening = false;
+                    micBtn.classList.remove('mic-listening');
+                };
+
+                micBtn.addEventListener('click', () => {
+                    if (state.isListening) {
+                        recognition.stop();
+                    } else {
+                        recognition.start();
+                    }
+                });
+            } else {
+                micBtn.addEventListener('click', () => {
+                    alert('Web Speech Recognition API is not supported in this browser viewport.');
+                });
+            }
+
+            // EXPRESSION BUTTONS
+            document.getElementById('btn-expr-happy').addEventListener('click', () => {
+                state.expression = 'happy';
+                document.getElementById('emotion-tag').textContent = 'EXPR: HAPPY';
+            });
+            document.getElementById('btn-expr-surprised').addEventListener('click', () => {
+                state.expression = 'surprised';
+                document.getElementById('emotion-tag').textContent = 'EXPR: SURPRISED';
+            });
+            document.getElementById('btn-expr-blush').addEventListener('click', () => {
+                state.expression = 'blush';
+                document.getElementById('emotion-tag').textContent = 'EXPR: BLUSH';
+            });
+
+            // TACTICAL BUTTON CHIPS
+            document.querySelectorAll('.chip').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const cmd = btn.getAttribute('data-cmd');
+                    chatInput.value = cmd;
+                    handleUserSend();
+                });
+            });
+
+            // DOCK ACTIONS
+            document.getElementById('dock-greet').addEventListener('click', () => {
+                const msg = "Konnichiwa, Senpai! Suki is fully booted and ready!";
+                appendMessage('Kitty Cat Ears (Suki)', msg, false);
+                speakText(msg);
+            });
+            document.getElementById('dock-happy').addEventListener('click', () => {
+                state.expression = 'happy';
+                document.getElementById('emotion-tag').textContent = 'EXPR: HAPPY';
+            });
+            document.getElementById('dock-tactical').addEventListener('click', () => {
+                const msg = "Tactical scanning active. Kitsune radar operational.";
+                appendMessage('Kitty Cat Ears (Suki)', msg, false);
+                speakText(msg);
+            });
+            document.getElementById('dock-blush').addEventListener('click', () => {
+                state.expression = 'blush';
+                document.getElementById('emotion-tag').textContent = 'EXPR: BLUSH';
+            });
+            document.getElementById('dock-clear').addEventListener('click', () => {
+                chatContainer.innerHTML = '';
+            });
+
+            // MODAL CONTROLS
+            const modal = document.getElementById('settings-modal');
+            const openModalBtn = document.getElementById('settings-modal-btn');
+            const dockSettingsBtn = document.getElementById('dock-settings');
+            const closeModalX = document.getElementById('close-modal-x');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+
+            const toggleModal = (show) => modal.classList.toggle('hidden', !show);
+            openModalBtn.addEventListener('click', () => toggleModal(true));
+            dockSettingsBtn.addEventListener('click', () => toggleModal(true));
+            closeModalX.addEventListener('click', () => toggleModal(false));
+            closeModalBtn.addEventListener('click', () => toggleModal(false));
+
+            // SLIDERS & AUDIO TOGGLE
+            document.getElementById('pitch-slider').addEventListener('input', (e) => {
+                state.pitch = parseFloat(e.target.value);
+                document.getElementById('pitch-val').textContent = state.pitch;
+            });
+            document.getElementById('rate-slider').addEventListener('input', (e) => {
+                state.rate = parseFloat(e.target.value);
+                document.getElementById('rate-val').textContent = state.rate;
+            });
+            document.getElementById('vol-slider').addEventListener('input', (e) => {
+                state.volume = parseFloat(e.target.value);
+                document.getElementById('vol-val').textContent = state.volume;
+            });
+            document.getElementById('eye-glow-toggle').addEventListener('change', (e) => {
+                state.eyeGlow = e.target.checked;
+            });
+
+            const audioBtn = document.getElementById('toggle-audio-btn');
+            const audioIcon = document.getElementById('audio-icon');
+            audioBtn.addEventListener('click', () => {
+                state.audioMuted = !state.audioMuted;
+                audioIcon.className = state.audioMuted ? 'fa-solid fa-volume-xmark text-slate-500' : 'fa-solid fa-volume-high text-pink-400';
+            });
+
+            // WEBLLM ENGINE INITIALIZATION (FALLBACK READY)
+            window.addEventListener('mlc-loaded', async () => {
+                const loader = document.getElementById('llm-loader-container');
+                const progress = document.getElementById('llm-progress-bar');
+                const percentText = document.getElementById('llm-load-percent');
+                const labelText = document.getElementById('llm-load-label');
+
+                if (window.CreateMLCEngine) {
+                    try {
+                        labelText.innerHTML = `<i class="fa-solid fa-brain text-pink-400 mr-1"></i>WebLLM: Engine Initialized!`;
+                        progress.style.width = '100%';
+                        percentText.textContent = '100%';
+                        setTimeout(() => loader.classList.add('hidden'), 2000);
+                    } catch (err) {
+                        labelText.textContent = 'WebLLM: Operating in standard fallback mode.';
+                    }
+                }
+            });
+
+            // Initial speak event listener trigger on first transmit button
+            document.querySelectorAll('.transmit-msg-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const text = btn.closest('.hud-card').querySelector('p').textContent;
+                    speakText(text);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
