@@ -5,8 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SukiBot // CYBER HUD & ANIME AVATAR ENGINE</title>
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Tailwind & Custom Stylesheets -->
+    <link rel="stylesheet" href="tailwind.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="suki-ai.css">
+    <link rel="stylesheet" href="suki-renderer.css">
     
     <!-- FontAwesome Icons CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,142 +25,6 @@
         window.CreateMLCEngine = CreateMLCEngine;
         window.dispatchEvent(new CustomEvent('mlc-loaded'));
     </script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        cyberDark: '#07050e',
-                        cyberPanel: '#0e081c',
-                        cyberCard: '#150d2a',
-                        cyberPurple: '#a855f7',
-                        cyberPink: '#ec4899',
-                        cyberCyan: '#06b6d4',
-                        cyberNeonPink: '#ff2a8d',
-                        cyberNeonCyan: '#00f0ff',
-                        cyberNeonPurple: '#bf5af2',
-                    },
-                    fontFamily: {
-                        orbitron: ['Orbitron', 'sans-serif'],
-                        rajdhani: ['Rajdhani', 'sans-serif'],
-                        mono: ['Share Tech Mono', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        * {
-            -webkit-tap-highlight-color: transparent;
-            box-sizing: border-box;
-        }
-        body {
-            background-color: #030207;
-            color: #e2e8f0;
-            font-family: 'Rajdhani', sans-serif;
-            user-select: none;
-            overflow-x: hidden;
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(14, 8, 28, 0.8);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #ff2a8d;
-            border-radius: 4px;
-        }
-
-        .hud-border {
-            border: 1px solid rgba(255, 42, 141, 0.4);
-            box-shadow: inset 0 0 15px rgba(168, 85, 247, 0.15), 0 0 10px rgba(255, 42, 141, 0.2);
-        }
-
-        .hud-card {
-            background: rgba(18, 11, 36, 0.85);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(191, 90, 242, 0.35);
-        }
-
-        .scanlines {
-            background: linear-gradient(
-                to bottom,
-                rgba(255,255,255,0),
-                rgba(255,255,255,0) 50%,
-                rgba(0, 0, 0, 0.45) 50%,
-                rgba(0, 0, 0, 0.45)
-            );
-            background-size: 100% 4px;
-        }
-
-        .matrix-bg {
-            background-image: radial-gradient(rgba(0, 240, 255, 0.1) 1px, transparent 0);
-            background-size: 12px 12px;
-        }
-
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 0 0 rgba(255, 42, 141, 0.8); }
-            70% { box-shadow: 0 0 0 12px rgba(255, 42, 141, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 42, 141, 0); }
-        }
-        .mic-listening {
-            animation: pulseGlow 1.4s infinite;
-            background-color: #ff2a8d !important;
-            color: #ffffff !important;
-            border-color: #00f0ff !important;
-        }
-
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        .cyber-corner {
-            position: relative;
-        }
-        .cyber-corner::before {
-            content: '';
-            position: absolute;
-            top: -1px;
-            left: -1px;
-            width: 8px;
-            height: 8px;
-            border-top: 2px solid #00f0ff;
-            border-left: 2px solid #00f0ff;
-            z-index: 25;
-        }
-        .cyber-corner::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            right: -1px;
-            width: 8px;
-            height: 8px;
-            border-bottom: 2px solid #ff2a8d;
-            border-right: 2px solid #ff2a8d;
-            z-index: 25;
-        }
-
-        .equalizer-bar {
-            height: 20%;
-            transition: height 0.08s ease-out;
-        }
-        
-        .speaking-active .equalizer-bar {
-            animation: bounce 0.4s ease-in-out infinite alternate;
-        }
-        @keyframes bounce {
-            0% { height: 15%; }
-            100% { height: 100%; }
-        }
-    </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-0 sm:p-4 bg-slate-950">
 
@@ -221,10 +90,10 @@
                     <span id="url-text" class="tracking-wider text-[9px]">sukibot.cyber.hud</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="toggle-audio-btn" title="Mute/Unmute Audio" class="text-pink-400 hover:text-pink-300">
+                    <button id="toggle-audio-btn" title="Mute/Unmute Audio" class="text-pink-400 hover:text-pink-300 cursor-pointer">
                         <i id="audio-icon" class="fa-solid fa-volume-high"></i>
                     </button>
-                    <button id="settings-modal-btn" title="Voice & Visual Settings" class="text-cyan-400 hover:text-cyan-300">
+                    <button id="settings-modal-btn" title="Voice & Visual Settings" class="text-cyan-400 hover:text-cyan-300 cursor-pointer">
                         <i class="fa-solid fa-gear"></i>
                     </button>
                 </div>
@@ -236,21 +105,17 @@
                 <!-- CYBER ANIME STAGE DISPLAY WITH CANVAS AVATAR -->
                 <div class="relative w-full h-64 bg-gradient-to-b from-purple-950/60 via-slate-950 to-purple-950/40 rounded-xl border border-pink-500/40 overflow-hidden cyber-corner shadow-[0_0_15px_rgba(168,85,247,0.2)] flex flex-col justify-between">
                     
-                    <!-- Background Code Grid Effect -->
                     <div class="absolute inset-0 opacity-15 font-mono text-[8px] text-cyan-400 overflow-hidden pointer-events-none p-2 leading-tight">
                         SUKI_SYSTEM_v3.0 // NEURAL_SPEECH_SYNC<br>
                         01001001 01001110 01001001 01010100<br>
                         CONNECTED TO LIVE SPEECH ENGINE & WEBGPU<br>
                         TACTICAL_KITSUNE_AVATAR: ACTIVE<br>
-                        LIP_SYNC_VISEME_MATRIX: ONLINE<br>
-                        AVATAR_AUDIO_REACTIVE: 100% [TALKING]<br>
-                        01100011 01111001 01100101 01100101 01110011
+                        LIP_SYNC_VISEME_MATRIX: ONLINE
                     </div>
 
-                    <!-- Interactive 2D Anime Avatar Canvas -->
                     <canvas id="sukiCanvas" class="w-full h-full block cursor-pointer relative z-10" title="Click avatar to trigger expression!"></canvas>
 
-                    <!-- Tactical Orb Floating Badge (Top Left) -->
+                    <!-- Tactical Orb Floating Badge -->
                     <div class="absolute top-2 left-2 z-20 flex flex-col items-center">
                         <div id="orb-container" class="w-9 h-9 rounded-full bg-purple-900/60 border border-cyan-400/80 flex items-center justify-center shadow-[0_0_10px_#00f0ff] animate-pulse cursor-pointer">
                             <i class="fa-solid fa-compact-disc text-cyan-300 text-sm animate-spin" style="animation-duration: 5s;"></i>
@@ -258,7 +123,7 @@
                         <span class="text-[7px] font-mono text-cyan-300 mt-0.5">ORB: 100%</span>
                     </div>
 
-                    <!-- Voice Wave Indicator (Top Right) -->
+                    <!-- Voice Wave Indicator -->
                     <div class="absolute top-2 right-2 z-20 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-full border border-pink-500/40">
                         <span id="speech-state-badge" class="text-[8px] font-mono text-pink-400 font-bold">IDLE</span>
                         <div id="equalizer" class="h-3 flex items-end gap-0.5">
@@ -272,7 +137,7 @@
                     <!-- META DATA OVERLAY BOX -->
                     <div class="absolute bottom-2 left-2 z-20 w-[64%] hud-card p-1.5 rounded-lg border border-purple-500/50 text-[9px] font-mono leading-tight flex items-center gap-2">
                         <div class="relative flex-none">
-                            <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=Suki" alt="Suki Avatar" class="w-9 h-9 rounded-lg border border-pink-500/80 object-cover shadow-[0_0_8px_rgba(255,42,141,0.5)]" />
+                            <img id="avatar-img" src="suki-avatar.jpg" alt="Suki Avatar" class="w-9 h-9 rounded-lg border border-pink-500/80 object-cover shadow-[0_0_8px_rgba(255,42,141,0.5)]" />
                             <span id="avatar-status-dot" class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-black"></span>
                         </div>
                         <div class="flex-1 min-w-0">
@@ -286,16 +151,16 @@
                         </div>
                     </div>
 
-                    <!-- Expression & Commits Badge (Right Bottom) -->
+                    <!-- Expression & Commits Badge -->
                     <div class="absolute bottom-2 right-2 z-20 flex flex-col items-end gap-1">
                         <div id="commits-badge" class="hud-card px-2 py-0.5 rounded-full text-[8px] font-orbitron text-purple-200 border border-pink-500/50 flex items-center gap-1 shadow-[0_0_8px_rgba(255,42,141,0.3)]">
                             <i class="fa-solid fa-clock-rotate-left text-pink-400 text-[8px]"></i>
                             <span>14 Commits</span>
                         </div>
                         <div class="flex gap-1">
-                            <button onclick="setSukiExpression('happy')" class="px-1.5 py-0.5 bg-pink-950/80 hover:bg-pink-800 border border-pink-500/50 rounded text-[7px] text-pink-300 font-mono">Happy</button>
-                            <button onclick="setSukiExpression('surprised')" class="px-1.5 py-0.5 bg-cyan-950/80 hover:bg-cyan-800 border border-cyan-500/50 rounded text-[7px] text-cyan-300 font-mono">Surprised</button>
-                            <button onclick="setSukiExpression('blush')" class="px-1.5 py-0.5 bg-purple-950/80 hover:bg-purple-800 border border-purple-500/50 rounded text-[7px] text-purple-300 font-mono">Blush</button>
+                            <button onclick="setSukiExpression('happy')" class="px-1.5 py-0.5 bg-pink-950/80 hover:bg-pink-800 border border-pink-500/50 rounded text-[7px] text-pink-300 font-mono cursor-pointer">Happy</button>
+                            <button onclick="setSukiExpression('surprised')" class="px-1.5 py-0.5 bg-cyan-950/80 hover:bg-cyan-800 border border-cyan-500/50 rounded text-[7px] text-cyan-300 font-mono cursor-pointer">Surprised</button>
+                            <button onclick="setSukiExpression('blush')" class="px-1.5 py-0.5 bg-purple-950/80 hover:bg-purple-800 border border-purple-500/50 rounded text-[7px] text-purple-300 font-mono cursor-pointer">Blush</button>
                         </div>
                     </div>
                 </div>
@@ -318,31 +183,26 @@
                         <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">ASR</span>
                         <span class="font-mono text-[7px] text-emerald-400">Active</span>
                     </button>
-
                     <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-purple-500/40 hover:border-purple-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Check Energy Orb diagnostics and kitsune mana levels.">
                         <i class="fa-solid fa-gem text-purple-400 text-[10px]"></i>
                         <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Orb</span>
                         <span class="font-mono text-[7px] text-emerald-400">Active</span>
                     </button>
-
                     <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-cyan-500/40 hover:border-cyan-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Display core neural model specs and hardware acceleration status.">
                         <i class="fa-solid fa-microchip text-cyan-400 text-[10px]"></i>
                         <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Core</span>
                         <span class="font-mono text-[7px] text-cyan-300">Llama</span>
                     </button>
-
                     <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-pink-500/40 hover:border-pink-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Initiate full system diagnostic scan and neural recalibration.">
                         <i class="fa-solid fa-shield-halved text-pink-400 text-[10px]"></i>
                         <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Scan</span>
                         <span class="font-mono text-[7px] text-emerald-400">Ready</span>
                     </button>
-
                     <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-purple-500/40 hover:border-purple-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Give me a cyber-anime greeting and introduce your capabilities!">
                         <i class="fa-solid fa-terminal text-purple-400 text-[10px]"></i>
                         <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Greet</span>
                         <span class="font-mono text-[7px] text-purple-300">Run</span>
                     </button>
-
                     <button class="chip hud-card p-1 rounded-lg flex flex-col items-center justify-center text-center border border-cyan-500/40 hover:border-cyan-400 transition hover:scale-105 active:scale-95 cursor-pointer" data-cmd="Clear conversation logs and reset cache memory buffers.">
                         <i class="fa-solid fa-rotate text-cyan-400 text-[10px]"></i>
                         <span class="font-orbitron text-[8px] font-bold text-slate-200 mt-0.5">Purge</span>
@@ -375,12 +235,12 @@
                 </button>
             </div>
 
-            <!-- SETTINGS MODAL (HIDDEN BY DEFAULT) -->
+            <!-- SETTINGS MODAL -->
             <div id="settings-modal" class="absolute inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
                 <div class="hud-card w-full max-w-xs p-4 rounded-2xl border border-cyan-400/60 space-y-3 font-mono text-xs">
                     <div class="flex justify-between items-center border-b border-purple-800 pb-2">
                         <span class="font-orbitron font-bold text-cyan-300">HUD SETTINGS</span>
-                        <button id="close-modal-btn" class="text-pink-400 hover:text-white"><i class="fa-solid fa-xmark text-sm"></i></button>
+                        <button id="close-modal-btn" class="text-pink-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-sm"></i></button>
                     </div>
                     <div class="space-y-2 text-purple-200">
                         <div>
@@ -397,7 +257,7 @@
                             </select>
                         </div>
                         <div class="pt-2 flex justify-end">
-                            <button id="save-settings-btn" class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-black font-bold rounded shadow-[0_0_8px_#00f0ff]">Apply Settings</button>
+                            <button id="save-settings-btn" class="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-black font-bold rounded shadow-[0_0_8px_#00f0ff] cursor-pointer">Apply Settings</button>
                         </div>
                     </div>
                 </div>
@@ -406,411 +266,10 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT ENGINE -->
-    <script>
-        // Clock updater
-        function updateClock() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('clock-display').textContent = `${hours}:${minutes}`;
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // Audio autoplay unlocker for iOS / Modern Browsers
-        let audioContextUnlocked = false;
-        function unlockAudioContext() {
-            if (audioContextUnlocked || !window.speechSynthesis) return;
-            const silentUtterance = new SpeechSynthesisUtterance('');
-            silentUtterance.volume = 0;
-            window.speechSynthesis.speak(silentUtterance);
-            audioContextUnlocked = true;
-            window.removeEventListener('click', unlockAudioContext);
-            window.removeEventListener('touchstart', unlockAudioContext);
-        }
-        window.addEventListener('click', unlockAudioContext);
-        window.addEventListener('touchstart', unlockAudioContext);
-
-        // Canvas Avatar Renderer & State
-        const canvas = document.getElementById('sukiCanvas');
-        const ctx = canvas.getContext('2d');
-        let currentExpression = 'happy';
-        let blinkTimer = 0;
-        let isBlinking = false;
-        let mouthAnim = 0;
-        let isSpeaking = false;
-
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        function setSukiExpression(expr) {
-            currentExpression = expr;
-            document.getElementById('emotion-tag').textContent = `EXPR: ${expr.toUpperCase()}`;
-            document.getElementById('emotion-select').value = expr;
-            addLog(`System`, `Expression updated to: ${expr}`);
-        }
-
-        document.getElementById('emotion-select').addEventListener('change', (e) => {
-            setSukiExpression(e.target.value);
-        });
-
-        // Canvas Drawing Loop
-        function drawAvatar() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2 + 10;
-
-            // Handle Blink
-            blinkTimer++;
-            if (blinkTimer > 150 && Math.random() < 0.05) {
-                isBlinking = true;
-                blinkTimer = 0;
-            } else if (isBlinking && blinkTimer > 8) {
-                isBlinking = false;
-                blinkTimer = 0;
-            }
-
-            // Glow Backlight
-            const gradient = ctx.createRadialGradient(cx, cy, 20, cx, cy, 120);
-            gradient.addColorStop(0, 'rgba(236, 72, 153, 0.25)');
-            gradient.addColorStop(1, 'rgba(7, 5, 14, 0)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Kitsune Ears
-            ctx.fillStyle = '#150d2a';
-            ctx.strokeStyle = '#ff2a8d';
-            ctx.lineWidth = 2;
-
-            // Left Ear
-            ctx.beginPath();
-            ctx.moveTo(cx - 55, cy - 40);
-            ctx.lineTo(cx - 90, cy - 100);
-            ctx.lineTo(cx - 30, cy - 70);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-
-            // Right Ear
-            ctx.beginPath();
-            ctx.moveTo(cx + 55, cy - 40);
-            ctx.lineTo(cx + 90, cy - 100);
-            ctx.lineTo(cx + 30, cy - 70);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-
-            // Head Silhouette
-            ctx.beginPath();
-            ctx.arc(cx, cy, 55, 0, Math.PI * 2);
-            ctx.fillStyle = '#0e081c';
-            ctx.fill();
-            ctx.strokeStyle = '#00f0ff';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Face Details - Eyes
-            if (!isBlinking) {
-                ctx.fillStyle = currentExpression === 'surprised' ? '#ff2a8d' : '#00f0ff';
-                // Left Eye
-                ctx.beginPath();
-                ctx.arc(cx - 20, cy - 5, currentExpression === 'surprised' ? 9 : 7, 0, Math.PI * 2);
-                ctx.fill();
-                // Right Eye
-                ctx.beginPath();
-                ctx.arc(cx + 20, cy - 5, currentExpression === 'surprised' ? 9 : 7, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Eye Shine
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(cx - 22, cy - 9, 3, 3);
-                ctx.fillRect(cx + 18, cy - 9, 3, 3);
-            } else {
-                // Blink lines
-                ctx.strokeStyle = '#00f0ff';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(cx - 27, cy - 5); ctx.lineTo(cx - 13, cy - 5);
-                ctx.moveTo(cx + 13, cy - 5); ctx.lineTo(cx + 27, cy - 5);
-                ctx.stroke();
-            }
-
-            // Blush Marks
-            if (currentExpression === 'blush' || currentExpression === 'happy') {
-                ctx.fillStyle = 'rgba(255, 42, 141, 0.4)';
-                ctx.beginPath();
-                ctx.arc(cx - 32, cy + 10, 8, 0, Math.PI * 2);
-                ctx.arc(cx + 32, cy + 10, 8, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Mouth (Lip Sync / Expression)
-            ctx.strokeStyle = '#ff2a8d';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            if (isSpeaking) {
-                mouthAnim = (mouthAnim + 0.3) % Math.PI;
-                let openH = 4 + Math.sin(mouthAnim) * 8;
-                ctx.fillStyle = '#ff2a8d';
-                ctx.arc(cx, cy + 22, openH, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (currentExpression === 'happy') {
-                ctx.arc(cx, cy + 18, 10, 0, Math.PI);
-                ctx.stroke();
-            } else if (currentExpression === 'surprised') {
-                ctx.arc(cx, cy + 22, 6, 0, Math.PI * 2);
-                ctx.stroke();
-            } else {
-                ctx.moveTo(cx - 8, cy + 20);
-                ctx.lineTo(cx + 8, cy + 20);
-                ctx.stroke();
-            }
-
-            requestAnimationFrame(drawAvatar);
-        }
-        drawAvatar();
-
-        canvas.addEventListener('click', () => {
-            const exprs = ['happy', 'surprised', 'blush', 'neutral'];
-            const next = exprs[(exprs.indexOf(currentExpression) + 1) % exprs.length];
-            setSukiExpression(next);
-        });
-
-        // Chat Console Logger
-        function addLog(sender, text) {
-            const chatContainer = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.className = 'flex items-start gap-2';
-            div.innerHTML = `<span class="text-pink-400 font-bold">[${sender}]</span><div class="text-slate-200">${text}</div>`;
-            chatContainer.appendChild(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        // Web Speech API TTS & ASR
-        let synth = window.speechSynthesis;
-        let voices = [];
-        let audioEnabled = true;
-        let currentUtterance = null; // Global reference to prevent GC drops
-
-        function loadVoices() {
-            if (!synth) return;
-            voices = synth.getVoices();
-            const voiceSelect = document.getElementById('voice-select');
-            if (!voiceSelect) return;
-            
-            voiceSelect.innerHTML = '';
-            voices.forEach((v, idx) => {
-                const opt = document.createElement('option');
-                opt.value = idx;
-                opt.textContent = `${v.name} (${v.lang})`;
-                voiceSelect.appendChild(opt);
-            });
-            if (voices.length > 0) {
-                const tag = document.getElementById('voice-name-tag');
-                if (tag) tag.textContent = voices[0].name.substring(0, 16) + '...';
-            }
-        }
-        if (synth && synth.onvoiceschanged !== undefined) {
-            synth.onvoiceschanged = loadVoices;
-        }
-        loadVoices();
-
-        function speakText(text) {
-            if (!audioEnabled || !synth) return;
-            
-            synth.cancel(); // Flush queue
-
-            currentUtterance = new SpeechSynthesisUtterance(text);
-            const voiceIdx = document.getElementById('voice-select').value;
-            if (voices[voiceIdx]) currentUtterance.voice = voices[voiceIdx];
-            currentUtterance.pitch = 1.2;
-            currentUtterance.rate = 1.05;
-
-            currentUtterance.onstart = () => {
-                isSpeaking = true;
-                const badge = document.getElementById('speech-state-badge');
-                if (badge) {
-                    badge.textContent = 'SPEAKING';
-                    badge.className = 'text-[8px] font-mono text-cyan-400 font-bold animate-pulse';
-                }
-                document.getElementById('equalizer')?.classList.add('speaking-active');
-            };
-
-            currentUtterance.onend = currentUtterance.onerror = () => {
-                isSpeaking = false;
-                const badge = document.getElementById('speech-state-badge');
-                if (badge) {
-                    badge.textContent = 'IDLE';
-                    badge.className = 'text-[8px] font-mono text-pink-400 font-bold';
-                }
-                document.getElementById('equalizer')?.classList.remove('speaking-active');
-                currentUtterance = null;
-            };
-
-            synth.speak(currentUtterance);
-        }
-
-        // Audio Mute Toggle
-        document.getElementById('toggle-audio-btn').addEventListener('click', () => {
-            audioEnabled = !audioEnabled;
-            const icon = document.getElementById('audio-icon');
-            icon.className = audioEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark text-pink-500';
-            addLog('System', audioEnabled ? 'Audio output enabled.' : 'Audio muted.');
-        });
-
-        // Speech Recognition (ASR) Setup
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
-        let isListening = false;
-
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
-
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('chat-input').value = transcript;
-                handleUserCommand(transcript);
-            };
-
-            recognition.onerror = (event) => {
-                console.warn('ASR error:', event.error);
-                isListening = false;
-                document.getElementById('mic-btn').classList.remove('mic-listening');
-                addLog('ASR', `Microphone status: ${event.error}`);
-            };
-
-            recognition.onend = () => {
-                isListening = false;
-                document.getElementById('mic-btn').classList.remove('mic-listening');
-            };
-        }
-
-        document.getElementById('mic-btn').addEventListener('click', () => {
-            if (!recognition) {
-                alert('Speech Recognition is not supported in this browser.');
-                return;
-            }
-            if (isListening) {
-                recognition.stop();
-                isListening = false;
-                document.getElementById('mic-btn').classList.remove('mic-listening');
-            } else {
-                recognition.start();
-                isListening = true;
-                document.getElementById('mic-btn').classList.add('mic-listening');
-                addLog('ASR', 'Listening for voice command...');
-            }
-        });
-
-        // WebLLM Engine Initialization & Chat Handling
-        let mlcEngine = null;
-        const selectedModel = "Llama-3.2-1B-Instruct-q4f32_1-MLC";
-
-        window.addEventListener('mlc-loaded', async () => {
-            try {
-                const loaderLabel = document.getElementById('llm-load-label');
-                const loaderPercent = document.getElementById('llm-load-percent');
-                const progressBar = document.getElementById('llm-progress-bar');
-
-                mlcEngine = await window.CreateMLCEngine(selectedModel, {
-                    initProgressCallback: (progress) => {
-                        const pct = Math.round(progress.progress * 100);
-                        loaderPercent.textContent = `${pct}%`;
-                        progressBar.style.width = `${pct}%`;
-                        loaderLabel.innerHTML = `<i class="fa-solid fa-brain text-pink-400 mr-1"></i>${progress.text}`;
-                    }
-                });
-
-                document.getElementById('llm-loader-container').style.display = 'none';
-                document.getElementById('model-status-text').textContent = '[WebGPU AI Online]';
-                addLog('SUKI://AI', 'WebLLM Llama-3.2 model initialized successfully!');
-            } catch (err) {
-                console.error(err);
-                document.getElementById('llm-load-label').textContent = 'WebLLM fallback mode active (CPU/Simulator).';
-                document.getElementById('model-status-text').textContent = '[Fallback Mode]';
-            }
-        });
-
-        async function handleUserCommand(text) {
-            if (!text.trim()) return;
-            addLog('USER', text);
-            document.getElementById('chat-input').value = '';
-
-            let responseText = "";
-            if (mlcEngine) {
-                try {
-                    const reply = await mlcEngine.chat.completions.create({
-                        messages: [
-                            { role: "system", content: "You are SukiBot, an advanced cyber-hud anime kitsune companion AI. Keep answers concise, futuristic, tech-savvy, and helpful." },
-                            { role: "user", content: text }
-                        ]
-                    });
-                    responseText = reply.choices[0].message.content;
-                } catch (e) {
-                    responseText = "Neural inference error encountered. Systems nominal.";
-                }
-            } else {
-                // Fallback deterministic smart responses
-                const lower = text.toLowerCase();
-                if (lower.includes('greet')) {
-                    responseText = "Kon'nichiwa, Commander! SukiBot online and fully synchronized with your cyber HUD.";
-                    setSukiExpression('happy');
-                } else if (lower.includes('asr') || lower.includes('mic')) {
-                    responseText = "ASR microphone status: Active and responsive to vocal commands.";
-                    setSukiExpression('surprised');
-                } else if (lower.includes('orb')) {
-                    responseText = "Energy Orb diagnostics: 100% mana capacity. Kitsune shields holding steady.";
-                    setSukiExpression('blush');
-                } else {
-                    responseText = `Command acknowledged: "${text}". All tactical subroutines operating at peak efficiency!`;
-                    setSukiExpression('happy');
-                }
-            }
-
-            addLog('SUKI', responseText);
-            speakText(responseText);
-        }
-
-        document.getElementById('send-btn').addEventListener('click', () => {
-            const val = document.getElementById('chat-input').value;
-            handleUserCommand(val);
-        });
-
-        document.getElementById('chat-input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                handleUserCommand(e.target.value);
-            }
-        });
-
-        // 6-Pack Quick Chips Handler
-        document.querySelectorAll('.chip').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const cmd = btn.getAttribute('data-cmd');
-                if (cmd) handleUserCommand(cmd);
-            });
-        });
-
-        // Settings Modal Controls
-        const settingsModal = document.getElementById('settings-modal');
-        document.getElementById('settings-modal-btn').addEventListener('click', () => {
-            settingsModal.classList.remove('hidden');
-        });
-        document.getElementById('close-modal-btn').addEventListener('click', () => {
-            settingsModal.classList.add('hidden');
-        });
-        document.getElementById('save-settings-btn').addEventListener('click', () => {
-            settingsModal.classList.add('hidden');
-            addLog('System', 'Settings updated successfully.');
-        });
-    </script>
+    <!-- Modular Script Imports -->
+    <script src="suki-audio.js"></script>
+    <script src="sukiVoice.js"></script>
+    <script src="suki-touch.js"></script>
+    <script src="suki-walker.js"></script>
 </body>
 </html>
