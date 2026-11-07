@@ -373,7 +373,12 @@
                     <button id="mic-btn" class="w-9 h-9 rounded-lg bg-purple-900/60 border border-pink-500/60 text-pink-400 hover:text-white flex items-center justify-center text-sm transition flex-none" title="Hold/Click to Talk (Web Speech ASR)">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
-                    <input id="chat-input" type="text" placeholder="Type a message or command for Suki..." class="flex-1 bg-purple-950/40 border border-purple-800/60 rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-pink-500 transition">
+                    <!-- WAKE WORD TOGGLE BUTTON -->
+                    <button id="wake-word-btn" class="px-2 py-1.5 rounded-lg bg-purple-950/80 border border-cyan-500/60 text-cyan-400 hover:text-white flex items-center gap-1 text-[10px] font-orbitron transition flex-none" title="Toggle Wake Word Continuous Listening ('Hey Suki')">
+                        <i class="fa-solid fa-ear-listen"></i>
+                        <span id="wakeword-status-label" class="hidden sm:inline">Wake: OFF</span>
+                    </button>
+                    <input id="chat-input" type="text" placeholder="Type a message or say 'Hey Suki'..." class="flex-1 bg-purple-950/40 border border-purple-800/60 rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-pink-500 transition">
                     <button id="send-btn" class="w-9 h-9 rounded-lg bg-pink-600 hover:bg-pink-500 border border-pink-400 text-white flex items-center justify-center text-sm transition flex-none">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
@@ -470,6 +475,7 @@
             isAudioMuted: false,
             isSpeaking: false,
             isListening: false,
+            wakeWordActive: false,
             currentExpression: 'happy', // happy, surprised, blush, tactical, thinking
             mouthAperture: 0, // 0 (closed) to 1 (open)
             mouthWidthFactor: 1.0,
@@ -498,6 +504,8 @@
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
         const micBtn = document.getElementById('mic-btn');
+        const wakeWordBtn = document.getElementById('wake-word-btn');
+        const wakewordStatusLabel = document.getElementById('wakeword-status-label');
         const clockDisplay = document.getElementById('clock-display');
         const equalizer = document.getElementById('equalizer');
         const speechStateBadge = document.getElementById('speech-state-badge');
@@ -1029,14 +1037,21 @@
             utterance.onend = () => {
                 state.isSpeaking = false;
                 equalizer.classList.remove('speaking-active');
-                speechStateBadge.textContent = 'IDLE';
+                speechStateBadge.textContent = state.wakeWordActive ? 'WAKE ON' : 'IDLE';
                 speechStateBadge.className = 'text-[8px] font-mono text-pink-400 font-bold';
+                // If Wake Word continuous mode is active, restart listening after speaking ends
+                if (state.wakeWordActive && recognition && !state.isListening) {
+                    try { recognition.start(); } catch(e) {}
+                }
             };
 
             utterance.onerror = () => {
                 state.isSpeaking = false;
                 equalizer.classList.remove('speaking-active');
-                speechStateBadge.textContent = 'IDLE';
+                speechStateBadge.textContent = state.wakeWordActive ? 'WAKE ON' : 'IDLE';
+                if (state.wakeWordActive && recognition && !state.isListening) {
+                    try { recognition.start(); } catch(e) {}
+                }
             };
 
             window.speechSynthesis.speak(utterance);
@@ -1057,52 +1072,134 @@
         });
 
         // ==========================================
-        // SPEECH RECOGNITION ENGINE (ASR / STT)
+        // SPEECH RECOGNITION & WAKE WORD ENGINE
         // ==========================================
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
 
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
+            recognition.continuous = true; // Enabled continuous mode for wake word detection
+            recognition.interimResults = true;
             recognition.lang = 'en-US';
 
             recognition.onstart = () => {
                 state.isListening = true;
                 micBtn.classList.add('mic-listening');
-                speechStateBadge.textContent = 'LISTENING';
-                speechStateBadge.className = 'text-[8px] font-mono text-emerald-400 font-bold animate-pulse';
+                if (state.wakeWordActive) {
+                    speechStateBadge.textContent = 'LISTENING (WAKE)';
+                    speechStateBadge.className = 'text-[8px] font-mono text-cyan-400 font-bold animate-pulse';
+                } else {
+                    speechStateBadge.textContent = 'LISTENING';
+                    speechStateBadge.className = 'text-[8px] font-mono text-emerald-400 font-bold animate-pulse';
+                }
             };
 
             recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                chatInput.value = transcript;
-                handleUserMessage(transcript);
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                const fullSpeech = (finalTranscript || interimTranscript).toLowerCase().trim();
+                if (fullSpeech) {
+                    chatInput.value = fullSpeech;
+
+                    // WAKE WORD DETECTION LOGIC ("hey suki", "suki", "ok suki")
+                    if (state.wakeWordActive) {
+                        if (fullSpeech.includes('hey suki') || fullSpeech.includes('suki') || fullSpeech.includes('ok suki')) {
+                            // Extract command after wake word if present
+                            let command = fullSpeech.replace(/hey suki|ok suki|suki/g, '').trim();
+                            if (command.length > 2) {
+                                // Stop continuous listening briefly to process query & respond
+                                try { recognition.stop(); } catch(e) {}
+                                handleUserMessage(command);
+                            } else {
+                                setSukiExpression('happy');
+                                speakText("Yes, Senpai? I'm listening!");
+                            }
+                        }
+                    } else if (finalTranscript) {
+                        // Standard single-shot speech mode
+                        try { recognition.stop(); } catch(e) {}
+                        handleUserMessage(finalTranscript);
+                    }
+                }
             };
 
             recognition.onerror = (event) => {
+                console.warn("Speech recognition error:", event.error);
                 state.isListening = false;
                 micBtn.classList.remove('mic-listening');
-                speechStateBadge.textContent = 'IDLE';
+                if (!state.isSpeaking) {
+                    speechStateBadge.textContent = state.wakeWordActive ? 'WAKE ON' : 'IDLE';
+                }
             };
 
             recognition.onend = () => {
                 state.isListening = false;
                 micBtn.classList.remove('mic-listening');
-                if (!state.isSpeaking) speechStateBadge.textContent = 'IDLE';
+                // Auto-restart if Wake Word mode remains active and not currently speaking
+                if (state.wakeWordActive && !state.isSpeaking) {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        // Prevent freezing if restart throws exception
+                        setTimeout(() => {
+                            try { recognition.start(); } catch(err) {}
+                        }, 500);
+                    }
+                } else if (!state.isSpeaking) {
+                    speechStateBadge.textContent = 'IDLE';
+                }
             };
         }
 
+        // Mic Button Click Handler
         micBtn.addEventListener('click', () => {
             if (!recognition) {
                 appendChatMessage('System', 'Speech Recognition is not supported on this browser.');
                 return;
             }
-            if (state.isListening) {
+            if (state.isListening && !state.wakeWordActive) {
                 recognition.stop();
             } else {
-                recognition.start();
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.warn("Recognition start error:", e);
+                }
+            }
+        });
+
+        // Toggle Wake Word Button ("Hey Suki" Continuous Listener)
+        wakeWordBtn.addEventListener('click', () => {
+            if (!recognition) {
+                appendChatMessage('System', 'Speech Recognition is not supported on this browser.');
+                return;
+            }
+            state.wakeWordActive = !state.wakeWordActive;
+            if (state.wakeWordActive) {
+                wakeWordBtn.className = 'px-2 py-1.5 rounded-lg bg-cyan-950 border border-cyan-400 text-white flex items-center gap-1 text-[10px] font-orbitron transition flex-none shadow-[0_0_8px_#00f0ff]';
+                wakewordStatusLabel.textContent = 'Wake: ON';
+                speechStateBadge.textContent = 'WAKE ON';
+                try {
+                    recognition.continuous = true;
+                    recognition.start();
+                } catch(e) {}
+                speakText("Wake word activated! Say 'Hey Suki' anytime to command me, Senpai!");
+            } else {
+                wakeWordBtn.className = 'px-2 py-1.5 rounded-lg bg-purple-950/80 border border-cyan-500/60 text-cyan-400 hover:text-white flex items-center gap-1 text-[10px] font-orbitron transition flex-none';
+                wakewordStatusLabel.textContent = 'Wake: OFF';
+                speechStateBadge.textContent = 'IDLE';
+                try { recognition.stop(); } catch(e) {}
+                speakText("Wake word deactivated.");
             }
         });
 
